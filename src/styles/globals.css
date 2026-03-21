@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { @apply dark; }
+  body { @apply bg-surface text-text-primary antialiased; }
+}
+
+@layer components {
+  .btn-primary { @apply bg-brand-500 hover:bg-brand-600 text-white font-medium py-2 px-4 rounded-lg transition-colors; }
+  .btn-secondary { @apply bg-surface-lighter hover:bg-surface-light text-text-primary font-medium py-2 px-4 rounded-lg border border-neutral-700 transition-colors; }
+  .btn-ghost { @apply hover:bg-surface-lighter text-text-secondary hover:text-text-primary py-2 px-4 rounded-lg transition-colors; }
+  .input-field { @apply bg-surface-light border border-neutral-700 rounded-lg px-4 py-2 text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all; }
+  .card { @apply bg-surface-light rounded-xl border border-neutral-800 p-6; }
+}
+
+.ProseMirror { @apply outline-none min-h-[200px]; }
+.ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  @apply text-text-muted float-left h-0 pointer-events-none;
+}
