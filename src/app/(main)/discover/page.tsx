@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useDebounce } from '@/hooks/use-debounce';
 import ArticleCard from '@/components/articles/ArticleCard';
@@ -9,6 +9,14 @@ import { Search, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 
 export default function DiscoverPage() {
+  return (
+    <Suspense fallback={<LoadingSpinner className="py-32" />}>
+      <DiscoverContent />
+    </Suspense>
+  );
+}
+
+function DiscoverContent() {
   const searchParams = useSearchParams();
   const tagFilter = searchParams.get('tag');
   const [query, setQuery] = useState('');

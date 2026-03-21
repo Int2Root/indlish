@@ -35,13 +35,21 @@ export async function PATCH(req: NextRequest, { params }: { params: { articleId:
     if (article.authorId !== session.user.id) return errorResponse('Forbidden', 403);
 
     const body = await req.json();
-    const validated = articleSchema.partial().parse(body);
+    const { tags, ...validated } = articleSchema.partial().parse(body);
 
     const updated = await prisma.article.update({
       where: { id: params.articleId },
       data: {
         ...validated,
         publishedAt: validated.status === 'PUBLISHED' && !article.publishedAt ? new Date() : article.publishedAt,
+        ...(tags ? {
+          tags: {
+            deleteMany: {},
+            create: tags.map((tagName: string) => ({
+              tag: { connectOrCreate: { where: { slug: tagName.toLowerCase() }, create: { name: tagName, slug: tagName.toLowerCase() } } },
+            })),
+          },
+        } : {}),
       },
     });
 
