@@ -39,7 +39,9 @@ model User {
   bio            String?
   role           UserRole  @default(READER)
   plan           PricingPlan @default(FREE)
-  socialLinks    Json?
+  socialLinks          Json?
+  passwordResetToken   String?   @unique
+  passwordResetExpiry  DateTime?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 

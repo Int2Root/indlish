@@ -2,11 +2,9 @@
 
 import { useState } from 'react';
 import { signIn } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 export default function RegisterPage() {
-  const router = useRouter();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -33,9 +31,13 @@ export default function RegisterPage() {
         return;
       }
 
-      await signIn('credentials', { email, password, redirect: false });
-      router.push('/dashboard');
-      router.refresh();
+      const signInResult = await signIn('credentials', { email, password, redirect: false });
+      if (signInResult?.error) {
+        // Registration succeeded but auto-login failed — send to login page
+        window.location.href = '/login';
+        return;
+      }
+      window.location.href = '/dashboard';
     } catch {
       setError('Something went wrong. Please try again.');
       setLoading(false);
