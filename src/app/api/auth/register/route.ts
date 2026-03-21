@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import prisma from '@/lib/prisma';
 import { registerSchema } from '@/lib/validations';
 import { successResponse, errorResponse } from '@/lib/api-helpers';
+import { sendWelcomeEmail } from '@/lib/msg91';
 
 export async function POST(req: NextRequest) {
   try {
@@ -29,7 +30,11 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return successResponse({ id: user.id, email: user.email }, 201);  } catch (error: any) {
+    // Welcome email (fire and forget)
+    sendWelcomeEmail(user.email, user.name).catch(() => {});
+
+    return successResponse({ id: user.id, email: user.email }, 201);
+  } catch (error: any) {
     if (error.name === 'ZodError') {
       return errorResponse(error.errors[0].message, 422);
     }
