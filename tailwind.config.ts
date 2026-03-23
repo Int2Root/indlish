@@ -9,7 +9,10 @@ const config: Config = {
         surface: { DEFAULT: '#0f0f0f', light: '#1a1a1a', lighter: '#262626' },
         text: { primary: '#fafafa', secondary: '#a3a3a3', muted: '#737373' },
       },
-      fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+      fontFamily: {
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+        serif: ['Georgia', 'Times New Roman', 'serif'],
+      },
       maxWidth: { article: '720px' },
     },
   },
