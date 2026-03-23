@@ -1,13 +1,73 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
 import { useEditor, EditorContent, BubbleMenu, FloatingMenu } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
 import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
-import { Bold, Italic, Link as LinkIcon, Heading1, Heading2, Quote, Minus, Code, ImageIcon, Plus } from 'lucide-react';
+import { Node, mergeAttributes } from '@tiptap/core';
+import { useState } from 'react';
+import {
+  Bold, Italic, Strikethrough, Code, Quote,
+  Link as LinkIcon, Plus, Image as ImageIcon,
+  Video, Minus, Code2,
+} from 'lucide-react';
 
+// ── YouTube custom node ───────────────────────────────────────────────────────
+function getYouTubeId(url: string): string | null {
+  const m = url.match(
+    /(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^"&?/\s]{11})/
+  );
+  return m ? m[1] : null;
+}
+
+const YouTubeExtension = Node.create({
+  name: 'youtube',
+  group: 'block',
+  atom: true,
+  draggable: true,
+
+  addAttributes() {
+    return { videoId: { default: null } };
+  },
+
+  parseHTML() {
+    return [{ tag: 'div[data-yt]' }];
+  },
+
+  renderHTML({ HTMLAttributes }) {
+    return ['div', mergeAttributes({ 'data-yt': '' }, HTMLAttributes)];
+  },
+
+  addNodeView() {
+    return ({ node }) => {
+      const wrap = document.createElement('div');
+      wrap.style.cssText =
+        'position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:8px;margin:2em 0;background:#000;';
+      const iframe = document.createElement('iframe');
+      iframe.src = `https://www.youtube.com/embed/${node.attrs.videoId}?rel=0`;
+      iframe.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;border:none;';
+      iframe.setAttribute('allowfullscreen', '');
+      iframe.setAttribute('loading', 'lazy');
+      wrap.appendChild(iframe);
+      return { dom: wrap };
+    };
+  },
+
+  addCommands() {
+    return {
+      insertYouTube:
+        (url: string) =>
+        ({ commands }: any) => {
+          const videoId = getYouTubeId(url);
+          if (!videoId) return false;
+          return commands.insertContent({ type: 'youtube', attrs: { videoId } });
+        },
+    } as any;
+  },
+});
+
+// ── Component ─────────────────────────────────────────────────────────────────
 interface TiptapEditorProps {
   content?: any;
   onChange?: (content: any) => void;
@@ -21,209 +81,164 @@ export default function TiptapEditor({
   placeholder = 'Tell your story...',
   editable = true,
 }: TiptapEditorProps) {
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [floatingOpen, setFloatingOpen] = useState(false);
-  const initialized = useRef(false);
+  const [showInsert, setShowInsert] = useState(false);
+
+  // Accept only valid Tiptap doc objects; treat everything else as empty
+  const normalizedContent =
+    content && typeof content === 'object' && content.type === 'doc' ? content : undefined;
 
   const editor = useEditor({
     extensions: [
       StarterKit,
-      Link.configure({
-        openOnClick: false,
-        HTMLAttributes: { class: 'editor-link' },
-      }),
-      Image.configure({ allowBase64: true }),
-      Placeholder.configure({
-        placeholder: ({ node }) => {
-          if (node.type.name === 'heading') return 'Heading...';
-          return placeholder;
-        },
-      }),
+      Link.configure({ openOnClick: false, autolink: true }),
+      Image.configure({ inline: false }),
+      Placeholder.configure({ placeholder }),
+      YouTubeExtension,
     ],
-    content: null,
+    content: normalizedContent,
     editable,
-    onUpdate: ({ editor }) => {
-      onChange?.(editor.getJSON());
-    },
+    onUpdate: ({ editor }) => onChange?.(editor.getJSON()),
   });
 
-  // Load content once it arrives from the server (avoids stale closure on useEditor init)
-  useEffect(() => {
-    if (editor && content && !initialized.current) {
-      editor.commands.setContent(content, false);
-      initialized.current = true;
-    }
-  }, [editor, content]);
+  if (!editor) return null;
 
-  // Close floating menu when editor loses focus
-  useEffect(() => {
-    if (!editor) return;
-    const handleBlur = () => setFloatingOpen(false);
-    editor.on('blur', handleBlur);
-    return () => { editor.off('blur', handleBlur); };
-  }, [editor]);
-
-  const insertImageFile = (file: File) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      editor?.chain().focus().setImage({ src: e.target?.result as string }).run();
-    };
-    reader.readAsDataURL(file);
+  const handleLink = () => {
+    const prev = editor.getAttributes('link').href || '';
+    const url = window.prompt('URL:', prev);
+    if (url === null) return;
+    if (!url) editor.chain().focus().unsetLink().run();
+    else editor.chain().focus().setLink({ href: url }).run();
   };
 
-  const setLink = () => {
-    const previousUrl = editor?.getAttributes('link').href;
-    const url = window.prompt('URL:', previousUrl || '');
-    if (url === null) return;
-    if (url === '') {
-      editor?.chain().focus().unsetLink().run();
-      return;
-    }
-    const href = url.startsWith('http') ? url : `https://${url}`;
-    if (editor?.state.selection.empty) {
-      editor.chain().focus().setLink({ href }).insertContent(href).run();
-    } else {
-      editor?.chain().focus().setLink({ href }).run();
-    }
+  const handleImage = () => {
+    const url = window.prompt('Image URL:');
+    if (url) editor.chain().focus().setImage({ src: url }).run();
+    setShowInsert(false);
+  };
+
+  const handleYouTube = () => {
+    const url = window.prompt('YouTube URL:');
+    if (url) (editor.chain().focus() as any).insertYouTube(url).run();
+    setShowInsert(false);
+  };
+
+  const handleHR = () => {
+    editor.chain().focus().setHorizontalRule().run();
+    setShowInsert(false);
+  };
+
+  const handleCodeBlock = () => {
+    editor.chain().focus().toggleCodeBlock().run();
+    setShowInsert(false);
   };
 
   return (
-    <div className="relative editor-wrapper">
-      {editable && editor && (
+    <div className="editor-root">
+      {editable && (
         <>
-          {/* Floating bubble toolbar — appears on text selection */}
-          <BubbleMenu
-            editor={editor}
-            tippyOptions={{ duration: 80, placement: 'top' }}
-            className="bubble-menu"
-          >
+          {/* ── Bubble menu (selection toolbar) ─────────────────────────── */}
+          <BubbleMenu editor={editor} tippyOptions={{ duration: 80 }} className="bubble-menu">
             <button
               onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleBold().run(); }}
-              className={`bm-btn ${editor.isActive('bold') ? 'active' : ''}`}
+              className={editor.isActive('bold') ? 'is-active' : ''}
               title="Bold"
             >
-              <Bold size={14} />
+              <Bold size={13} />
             </button>
             <button
               onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleItalic().run(); }}
-              className={`bm-btn ${editor.isActive('italic') ? 'active' : ''}`}
+              className={editor.isActive('italic') ? 'is-active' : ''}
               title="Italic"
             >
-              <Italic size={14} />
+              <Italic size={13} />
             </button>
-            <div className="bm-sep" />
             <button
-              onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleHeading({ level: 1 }).run(); }}
-              className={`bm-btn text-xs font-bold ${editor.isActive('heading', { level: 1 }) ? 'active' : ''}`}
-              title="Heading 1"
+              onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleStrike().run(); }}
+              className={editor.isActive('strike') ? 'is-active' : ''}
+              title="Strikethrough"
             >
-              H1
+              <Strikethrough size={13} />
             </button>
+            <button
+              onMouseDown={(e) => { e.preventDefault(); handleLink(); }}
+              className={editor.isActive('link') ? 'is-active' : ''}
+              title="Link"
+            >
+              <LinkIcon size={13} />
+            </button>
+            <span className="bubble-sep" />
             <button
               onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleHeading({ level: 2 }).run(); }}
-              className={`bm-btn text-xs font-bold ${editor.isActive('heading', { level: 2 }) ? 'active' : ''}`}
+              className={editor.isActive('heading', { level: 2 }) ? 'is-active' : ''}
               title="Heading 2"
             >
               H2
             </button>
-            <div className="bm-sep" />
             <button
-              onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleBlockquote().run(); }}
-              className={`bm-btn ${editor.isActive('blockquote') ? 'active' : ''}`}
-              title="Blockquote"
+              onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleHeading({ level: 3 }).run(); }}
+              className={editor.isActive('heading', { level: 3 }) ? 'is-active' : ''}
+              title="Heading 3"
             >
-              <Quote size={14} />
+              H3
             </button>
             <button
-              onMouseDown={(e) => { e.preventDefault(); setLink(); }}
-              className={`bm-btn ${editor.isActive('link') ? 'active' : ''}`}
-              title="Link"
+              onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleBlockquote().run(); }}
+              className={editor.isActive('blockquote') ? 'is-active' : ''}
+              title="Blockquote"
             >
-              <LinkIcon size={14} />
+              <Quote size={13} />
             </button>
             <button
               onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleCode().run(); }}
-              className={`bm-btn ${editor.isActive('code') ? 'active' : ''}`}
-              title="Inline Code"
+              className={editor.isActive('code') ? 'is-active' : ''}
+              title="Inline code"
             >
-              <Code size={14} />
+              <Code size={13} />
             </button>
           </BubbleMenu>
 
-          {/* Floating "+" inserter — appears on empty lines */}
+          {/* ── Floating "+" inserter (empty-line trigger) ───────────────── */}
           <FloatingMenu
             editor={editor}
-            tippyOptions={{ duration: 80, placement: 'left-start', offset: [0, -8] }}
+            tippyOptions={{ duration: 80, placement: 'left-start', offset: [0, 20] }}
+            className="floating-menu"
           >
-            <div className="flex items-center gap-2">
+            {showInsert ? (
+              <div className="insert-panel">
+                <button
+                  onMouseDown={(e) => { e.preventDefault(); setShowInsert(false); }}
+                  title="Close"
+                  className="insert-close"
+                >
+                  <Plus size={14} style={{ transform: 'rotate(45deg)' }} />
+                </button>
+                <button onMouseDown={(e) => { e.preventDefault(); handleImage(); }} title="Image">
+                  <ImageIcon size={15} />
+                </button>
+                <button onMouseDown={(e) => { e.preventDefault(); handleYouTube(); }} title="YouTube">
+                  <Video size={15} />
+                </button>
+                <button onMouseDown={(e) => { e.preventDefault(); handleHR(); }} title="Divider">
+                  <Minus size={15} />
+                </button>
+                <button onMouseDown={(e) => { e.preventDefault(); handleCodeBlock(); }} title="Code block">
+                  <Code2 size={15} />
+                </button>
+              </div>
+            ) : (
               <button
-                onClick={() => setFloatingOpen((o) => !o)}
-                className={`floating-plus${floatingOpen ? ' open' : ''}`}
-                title="Insert content"
+                className="insert-trigger"
+                onMouseDown={(e) => { e.preventDefault(); setShowInsert(true); }}
+                title="Insert"
               >
-                <Plus size={16} className={`transition-transform duration-200 ${floatingOpen ? 'rotate-45' : ''}`} />
+                <Plus size={18} />
               </button>
-              {floatingOpen && (
-                <div className="floating-menu-panel">
-                  <button
-                    onClick={() => { setFloatingOpen(false); fileInputRef.current?.click(); }}
-                    className="fm-item"
-                  >
-                    <ImageIcon size={14} />
-                    <span>Image</span>
-                  </button>
-                  <div className="fm-sep" />
-                  <button
-                    onClick={() => { setFloatingOpen(false); editor.chain().focus().setHorizontalRule().run(); }}
-                    className="fm-item"
-                  >
-                    <Minus size={14} />
-                    <span>Divider</span>
-                  </button>
-                  <div className="fm-sep" />
-                  <button
-                    onClick={() => { setFloatingOpen(false); editor.chain().focus().toggleCodeBlock().run(); }}
-                    className="fm-item"
-                  >
-                    <Code size={14} />
-                    <span>Code</span>
-                  </button>
-                  <div className="fm-sep" />
-                  <button
-                    onClick={() => { setFloatingOpen(false); editor.chain().focus().toggleHeading({ level: 1 }).run(); }}
-                    className="fm-item"
-                  >
-                    <Heading1 size={14} />
-                    <span>Heading</span>
-                  </button>
-                  <div className="fm-sep" />
-                  <button
-                    onClick={() => { setFloatingOpen(false); editor.chain().focus().toggleBulletList().run(); }}
-                    className="fm-item"
-                  >
-                    <span className="text-base leading-none">•</span>
-                    <span>List</span>
-                  </button>
-                </div>
-              )}
-            </div>
+            )}
           </FloatingMenu>
         </>
       )}
 
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          if (file) insertImageFile(file);
-          e.target.value = '';
-        }}
-      />
-
-      <EditorContent editor={editor} className="editor-content" />
+      <EditorContent editor={editor} />
     </div>
   );
 }
