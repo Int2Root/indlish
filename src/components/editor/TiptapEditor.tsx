@@ -1,12 +1,73 @@
 'use client';
 
-import { useEditor, EditorContent } from '@tiptap/react';
+import { useEditor, EditorContent, BubbleMenu, FloatingMenu } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
 import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
-import { Bold, Italic, Strikethrough, Code, Heading1, Heading2, List, ListOrdered, Quote, ImageIcon, LinkIcon, Undo, Redo } from 'lucide-react';
+import { Node, mergeAttributes } from '@tiptap/core';
+import { useState } from 'react';
+import {
+  Bold, Italic, Strikethrough, Code, Quote,
+  Link as LinkIcon, Plus, Image as ImageIcon,
+  Video, Minus, Code2,
+} from 'lucide-react';
 
+// ── YouTube custom node ───────────────────────────────────────────────────────
+function getYouTubeId(url: string): string | null {
+  const m = url.match(
+    /(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^"&?/\s]{11})/
+  );
+  return m ? m[1] : null;
+}
+
+const YouTubeExtension = Node.create({
+  name: 'youtube',
+  group: 'block',
+  atom: true,
+  draggable: true,
+
+  addAttributes() {
+    return { videoId: { default: null } };
+  },
+
+  parseHTML() {
+    return [{ tag: 'div[data-yt]' }];
+  },
+
+  renderHTML({ HTMLAttributes }) {
+    return ['div', mergeAttributes({ 'data-yt': '' }, HTMLAttributes)];
+  },
+
+  addNodeView() {
+    return ({ node }) => {
+      const wrap = document.createElement('div');
+      wrap.style.cssText =
+        'position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:8px;margin:2em 0;background:#000;';
+      const iframe = document.createElement('iframe');
+      iframe.src = `https://www.youtube.com/embed/${node.attrs.videoId}?rel=0`;
+      iframe.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;border:none;';
+      iframe.setAttribute('allowfullscreen', '');
+      iframe.setAttribute('loading', 'lazy');
+      wrap.appendChild(iframe);
+      return { dom: wrap };
+    };
+  },
+
+  addCommands() {
+    return {
+      insertYouTube:
+        (url: string) =>
+        ({ commands }: any) => {
+          const videoId = getYouTubeId(url);
+          if (!videoId) return false;
+          return commands.insertContent({ type: 'youtube', attrs: { videoId } });
+        },
+    } as any;
+  },
+});
+
+// ── Component ─────────────────────────────────────────────────────────────────
 interface TiptapEditorProps {
   content?: any;
   onChange?: (content: any) => void;
@@ -14,63 +75,170 @@ interface TiptapEditorProps {
   editable?: boolean;
 }
 
-function MenuBar({ editor }: { editor: any }) {
-  if (!editor) return null;
+export default function TiptapEditor({
+  content,
+  onChange,
+  placeholder = 'Tell your story...',
+  editable = true,
+}: TiptapEditorProps) {
+  const [showInsert, setShowInsert] = useState(false);
 
-  const buttons = [
-    { icon: Bold, action: () => editor.chain().focus().toggleBold().run(), active: editor.isActive('bold') },
-    { icon: Italic, action: () => editor.chain().focus().toggleItalic().run(), active: editor.isActive('italic') },
-    { icon: Strikethrough, action: () => editor.chain().focus().toggleStrike().run(), active: editor.isActive('strike') },
-    { icon: Code, action: () => editor.chain().focus().toggleCode().run(), active: editor.isActive('code') },
-    { icon: Heading1, action: () => editor.chain().focus().toggleHeading({ level: 2 }).run(), active: editor.isActive('heading', { level: 2 }) },
-    { icon: Heading2, action: () => editor.chain().focus().toggleHeading({ level: 3 }).run(), active: editor.isActive('heading', { level: 3 }) },
-    { icon: List, action: () => editor.chain().focus().toggleBulletList().run(), active: editor.isActive('bulletList') },
-    { icon: ListOrdered, action: () => editor.chain().focus().toggleOrderedList().run(), active: editor.isActive('orderedList') },
-    { icon: Quote, action: () => editor.chain().focus().toggleBlockquote().run(), active: editor.isActive('blockquote') },
-    { icon: Undo, action: () => editor.chain().focus().undo().run(), active: false },
-    { icon: Redo, action: () => editor.chain().focus().redo().run(), active: false },
-  ];
-  const addImage = () => {
-    const url = window.prompt('Image URL:');
-    if (url) editor.chain().focus().setImage({ src: url }).run();
-  };
+  // Accept only valid Tiptap doc objects; treat everything else as empty
+  const normalizedContent =
+    content && typeof content === 'object' && content.type === 'doc' ? content : undefined;
 
-  const addLink = () => {
-    const url = window.prompt('Link URL:');
-    if (url) editor.chain().focus().setLink({ href: url }).run();
-  };
-
-  return (
-    <div className="flex flex-wrap gap-1 p-2 border-b border-neutral-700 bg-surface-lighter rounded-t-lg">
-      {buttons.map(({ icon: Icon, action, active }, i) => (
-        <button key={i} onClick={action} className={`p-2 rounded hover:bg-surface-light transition-colors ${active ? 'bg-brand-500/20 text-brand-400' : 'text-text-secondary'}`}>
-          <Icon size={16} />
-        </button>
-      ))}
-      <button onClick={addImage} className="p-2 rounded hover:bg-surface-light text-text-secondary"><ImageIcon size={16} /></button>
-      <button onClick={addLink} className="p-2 rounded hover:bg-surface-light text-text-secondary"><LinkIcon size={16} /></button>
-    </div>
-  );
-}
-export default function TiptapEditor({ content, onChange, placeholder = 'Start writing...', editable = true }: TiptapEditorProps) {
   const editor = useEditor({
     extensions: [
       StarterKit,
-      Link.configure({ openOnClick: false }),
-      Image,
+      Link.configure({ openOnClick: false, autolink: true }),
+      Image.configure({ inline: false }),
       Placeholder.configure({ placeholder }),
+      YouTubeExtension,
     ],
-    content,
+    content: normalizedContent,
     editable,
-    onUpdate: ({ editor }) => {
-      onChange?.(editor.getJSON());
-    },
+    onUpdate: ({ editor }) => onChange?.(editor.getJSON()),
   });
 
+  if (!editor) return null;
+
+  const handleLink = () => {
+    const prev = editor.getAttributes('link').href || '';
+    const url = window.prompt('URL:', prev);
+    if (url === null) return;
+    if (!url) editor.chain().focus().unsetLink().run();
+    else editor.chain().focus().setLink({ href: url }).run();
+  };
+
+  const handleImage = () => {
+    const url = window.prompt('Image URL:');
+    if (url) editor.chain().focus().setImage({ src: url }).run();
+    setShowInsert(false);
+  };
+
+  const handleYouTube = () => {
+    const url = window.prompt('YouTube URL:');
+    if (url) (editor.chain().focus() as any).insertYouTube(url).run();
+    setShowInsert(false);
+  };
+
+  const handleHR = () => {
+    editor.chain().focus().setHorizontalRule().run();
+    setShowInsert(false);
+  };
+
+  const handleCodeBlock = () => {
+    editor.chain().focus().toggleCodeBlock().run();
+    setShowInsert(false);
+  };
+
   return (
-    <div className="border border-neutral-700 rounded-lg overflow-hidden">
-      {editable && <MenuBar editor={editor} />}
-      <EditorContent editor={editor} className="prose prose-invert max-w-none p-4" />
+    <div className="editor-root">
+      {editable && (
+        <>
+          {/* ── Bubble menu (selection toolbar) ─────────────────────────── */}
+          <BubbleMenu editor={editor} tippyOptions={{ duration: 80 }} className="bubble-menu">
+            <button
+              onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleBold().run(); }}
+              className={editor.isActive('bold') ? 'is-active' : ''}
+              title="Bold"
+            >
+              <Bold size={13} />
+            </button>
+            <button
+              onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleItalic().run(); }}
+              className={editor.isActive('italic') ? 'is-active' : ''}
+              title="Italic"
+            >
+              <Italic size={13} />
+            </button>
+            <button
+              onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleStrike().run(); }}
+              className={editor.isActive('strike') ? 'is-active' : ''}
+              title="Strikethrough"
+            >
+              <Strikethrough size={13} />
+            </button>
+            <button
+              onMouseDown={(e) => { e.preventDefault(); handleLink(); }}
+              className={editor.isActive('link') ? 'is-active' : ''}
+              title="Link"
+            >
+              <LinkIcon size={13} />
+            </button>
+            <span className="bubble-sep" />
+            <button
+              onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleHeading({ level: 2 }).run(); }}
+              className={editor.isActive('heading', { level: 2 }) ? 'is-active' : ''}
+              title="Heading 2"
+            >
+              H2
+            </button>
+            <button
+              onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleHeading({ level: 3 }).run(); }}
+              className={editor.isActive('heading', { level: 3 }) ? 'is-active' : ''}
+              title="Heading 3"
+            >
+              H3
+            </button>
+            <button
+              onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleBlockquote().run(); }}
+              className={editor.isActive('blockquote') ? 'is-active' : ''}
+              title="Blockquote"
+            >
+              <Quote size={13} />
+            </button>
+            <button
+              onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleCode().run(); }}
+              className={editor.isActive('code') ? 'is-active' : ''}
+              title="Inline code"
+            >
+              <Code size={13} />
+            </button>
+          </BubbleMenu>
+
+          {/* ── Floating "+" inserter (empty-line trigger) ───────────────── */}
+          <FloatingMenu
+            editor={editor}
+            tippyOptions={{ duration: 80, placement: 'left-start', offset: [0, 20] }}
+            className="floating-menu"
+          >
+            {showInsert ? (
+              <div className="insert-panel">
+                <button
+                  onMouseDown={(e) => { e.preventDefault(); setShowInsert(false); }}
+                  title="Close"
+                  className="insert-close"
+                >
+                  <Plus size={14} style={{ transform: 'rotate(45deg)' }} />
+                </button>
+                <button onMouseDown={(e) => { e.preventDefault(); handleImage(); }} title="Image">
+                  <ImageIcon size={15} />
+                </button>
+                <button onMouseDown={(e) => { e.preventDefault(); handleYouTube(); }} title="YouTube">
+                  <Video size={15} />
+                </button>
+                <button onMouseDown={(e) => { e.preventDefault(); handleHR(); }} title="Divider">
+                  <Minus size={15} />
+                </button>
+                <button onMouseDown={(e) => { e.preventDefault(); handleCodeBlock(); }} title="Code block">
+                  <Code2 size={15} />
+                </button>
+              </div>
+            ) : (
+              <button
+                className="insert-trigger"
+                onMouseDown={(e) => { e.preventDefault(); setShowInsert(true); }}
+                title="Insert"
+              >
+                <Plus size={18} />
+              </button>
+            )}
+          </FloatingMenu>
+        </>
+      )}
+
+      <EditorContent editor={editor} />
     </div>
   );
 }
