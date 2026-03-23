@@ -6,7 +6,7 @@ import Link from '@tiptap/extension-link';
 import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
 import { Node, mergeAttributes } from '@tiptap/core';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import {
   Bold, Italic, Strikethrough, Code, Quote,
   Link as LinkIcon, Plus, Image as ImageIcon,
@@ -82,6 +82,7 @@ export default function TiptapEditor({
   editable = true,
 }: TiptapEditorProps) {
   const [showInsert, setShowInsert] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Accept only valid Tiptap doc objects; treat everything else as empty
   const normalizedContent =
@@ -91,12 +92,13 @@ export default function TiptapEditor({
     extensions: [
       StarterKit,
       Link.configure({ openOnClick: false, autolink: true }),
-      Image.configure({ inline: false }),
+      Image.configure({ inline: false, allowBase64: true }),
       Placeholder.configure({ placeholder }),
       YouTubeExtension,
     ],
     content: normalizedContent,
     editable,
+    immediatelyRender: false,
     onUpdate: ({ editor }) => onChange?.(editor.getJSON()),
   });
 
@@ -111,9 +113,8 @@ export default function TiptapEditor({
   };
 
   const handleImage = () => {
-    const url = window.prompt('Image URL:');
-    if (url) editor.chain().focus().setImage({ src: url }).run();
     setShowInsert(false);
+    fileInputRef.current?.click();
   };
 
   const handleYouTube = () => {
@@ -238,7 +239,24 @@ export default function TiptapEditor({
         </>
       )}
 
-      <EditorContent editor={editor} />
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = (ev) => {
+            editor?.chain().focus().setImage({ src: ev.target?.result as string }).run();
+          };
+          reader.readAsDataURL(file);
+          e.target.value = '';
+        }}
+      />
+
+      <EditorContent editor={editor} className="editor-content" />
     </div>
   );
 }

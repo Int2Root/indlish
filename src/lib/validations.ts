@@ -15,7 +15,7 @@ export const articleSchema = z.object({
   title: z.string().min(1, 'Title is required').max(200),
   content: z.any(),
   excerpt: z.string().max(300).optional(),
-  coverImage: z.string().url().optional().or(z.literal('')),
+  coverImage: z.string().optional().or(z.literal('')),
   tags: z.array(z.string()).max(5).optional(),
   status: z.enum(['DRAFT', 'PUBLISHED']).optional(),
 });
