@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
-import { successResponse, errorResponse, requireAuth } from '@/lib/api-helpers';
+import { successResponse, errorResponse, requireAuth, getAuthSession } from '@/lib/api-helpers';
 import { articleSchema } from '@/lib/validations';
 import { generateSlug, getReadingTime, PLAN_LIMITS } from '@/lib/utils';
 
@@ -8,19 +8,25 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '20');
+    const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 100);
     const tag = searchParams.get('tag');
     const authorId = searchParams.get('authorId');
-    const status = searchParams.get('status'); // undefined = all statuses for owner
+    const status = searchParams.get('status');
 
+    const session = await getAuthSession();
     const where: any = {};
-    // If querying by authorId without a specific status, allow all (for dashboard/write page)
+
     if (status) {
       where.status = status;
     } else if (!authorId) {
       // Public feeds default to PUBLISHED only
       where.status = 'PUBLISHED';
       where.author = { username: { not: 'test' } };
+    } else {
+      // authorId provided: show drafts only to the owner, others see PUBLISHED only
+      if (!session?.user || session.user.id !== authorId) {
+        where.status = 'PUBLISHED';
+      }
     }
     if (tag) where.tags = { some: { tag: { slug: tag } } };
     if (authorId) { where.authorId = authorId; delete where.author; }

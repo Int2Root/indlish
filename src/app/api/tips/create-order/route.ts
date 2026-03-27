@@ -18,6 +18,9 @@ export async function POST(req: NextRequest) {
     if (!amount || amount < 10) {
       return errorResponse('Minimum tip amount is ₹10', 400);
     }
+    if (amount > 10000) {
+      return errorResponse('Maximum tip amount is ₹10,000', 400);
+    }
 
     const order = await razorpay.orders.create({
       amount: amount * 100, // Razorpay expects paise
