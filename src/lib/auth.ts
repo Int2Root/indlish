@@ -52,13 +52,7 @@ export const authOptions: NextAuthOptions = {
     },
   },
   callbacks: {
-    async signIn({ user, account, profile }) {
-      console.log('[AUTH DEBUG] signIn callback called', {
-        provider: account?.provider,
-        email: profile?.email,
-        hasAccount: !!account,
-      });
-
+    async signIn({ account, profile }) {
       if (account?.provider === 'google' && profile?.email) {
         try {
           const existingUser = await prisma.user.findUnique({
@@ -66,15 +60,8 @@ export const authOptions: NextAuthOptions = {
             include: { accounts: { where: { provider: 'google' } } },
           });
 
-          console.log('[AUTH DEBUG] existingUser lookup', {
-            found: !!existingUser,
-            userId: existingUser?.id,
-            googleAccountsCount: existingUser?.accounts?.length,
-          });
-
           if (existingUser && existingUser.accounts.length === 0) {
-            console.log('[AUTH DEBUG] Creating account link for existing user');
-            const created = await prisma.account.create({
+            await prisma.account.create({
               data: {
                 userId: existingUser.id,
                 type: account.type,
@@ -89,14 +76,9 @@ export const authOptions: NextAuthOptions = {
                 session_state: account.session_state ?? undefined,
               },
             });
-            console.log('[AUTH DEBUG] Account created successfully', { id: created.id });
-          } else if (existingUser) {
-            console.log('[AUTH DEBUG] Google account already linked, skipping');
-          } else {
-            console.log('[AUTH DEBUG] No existing user found for email, new user flow');
           }
         } catch (err: any) {
-          console.error('[AUTH DEBUG] Error in signIn callback:', err.message, err.stack);
+          console.error('[auth] Error linking Google account:', err.message);
         }
       }
       return true;
