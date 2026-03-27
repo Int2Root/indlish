@@ -43,7 +43,6 @@ export const authOptions: NextAuthOptions = {
   },
   events: {
     async createUser({ user }) {
-      // Google OAuth users have no password; credentials users are handled by the register route
       if (user.email) {
         const dbUser = await prisma.user.findUnique({ where: { id: user.id }, select: { password: true } });
         if (!dbUser?.password) {
@@ -53,6 +52,33 @@ export const authOptions: NextAuthOptions = {
     },
   },
   callbacks: {
+    async signIn({ user, account, profile }) {
+      if (account?.provider === 'google' && profile?.email) {
+        const existingUser = await prisma.user.findUnique({
+          where: { email: profile.email },
+          include: { accounts: { where: { provider: 'google' } } },
+        });
+
+        if (existingUser && existingUser.accounts.length === 0) {
+          await prisma.account.create({
+            data: {
+              userId: existingUser.id,
+              type: account.type,
+              provider: account.provider,
+              providerAccountId: account.providerAccountId,
+              refresh_token: account.refresh_token,
+              access_token: account.access_token,
+              expires_at: account.expires_at,
+              token_type: account.token_type,
+              scope: account.scope,
+              id_token: account.id_token,
+              session_state: account.session_state,
+            },
+          });
+        }
+      }
+      return true;
+    },
     async jwt({ token, user }) {
       if (user) {
         const dbUser = await prisma.user.findUnique({ where: { id: user.id } });
