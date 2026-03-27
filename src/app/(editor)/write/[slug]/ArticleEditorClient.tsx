@@ -6,9 +6,13 @@ import { useCurrentUser } from '@/hooks/use-session';
 import { useDebounce } from '@/hooks/use-debounce';
 import TiptapEditor from '@/components/editor/TiptapEditor';
 import { toast } from 'sonner';
-import { ArrowLeft, Send, Tag, X, Upload, Link2, Check } from 'lucide-react';
+import { ArrowLeft, Send, Tag, X, Upload, Link2, Check, Heart } from 'lucide-react';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import Link from 'next/link';
+import CommentSection from '@/components/articles/CommentSection';
+import ReactionBar from '@/components/articles/ReactionBar';
+import FollowButton from '@/components/articles/FollowButton';
+import SubscribeWidget from '@/components/articles/SubscribeWidget';
 
 type SaveStatus = 'saved' | 'saving' | 'unsaved';
 
@@ -187,6 +191,12 @@ export default function ArticleEditorPage() {
 
   // ── Reader view (non-author) ────────────────────────────────────────────────
   if (!isAuthor) {
+    const handleLike = async () => {
+      const res = await fetch(`/api/articles/${article.id}/like`, { method: 'POST' });
+      const data = await res.json();
+      if (data.success) setArticle((prev: any) => ({ ...prev, isLiked: data.data.liked }));
+    };
+
     return (
       <div className="reader-page">
         <header className="reader-topbar">
@@ -200,15 +210,78 @@ export default function ArticleEditorPage() {
           )}
           <h1 className="reader-title">{article.title}</h1>
           {article.excerpt && <p className="reader-subtitle">{article.excerpt}</p>}
+
           <div className="reader-meta">
-            <span>{article.author?.name}</span>
+            <Link href={`/profile/${article.author?.username}`} className="hover:text-brand-400 transition-colors">
+              {article.author?.name}
+            </Link>
             <span>·</span>
             <span>{article.readingTime} min read</span>
             <span>·</span>
             <span>{article.views} views</span>
           </div>
+
+          {/* Author + Follow */}
+          <div className="flex items-center justify-between py-4 border-y border-neutral-800 mb-6">
+            <Link href={`/profile/${article.author?.username}`} className="flex items-center gap-3 group">
+              {article.author?.image ? (
+                <img src={article.author.image} alt="" className="w-10 h-10 rounded-full" />
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-brand-500 flex items-center justify-center font-bold">
+                  {article.author?.name?.[0]}
+                </div>
+              )}
+              <div>
+                <p className="font-medium text-sm group-hover:text-brand-400 transition-colors">{article.author?.name}</p>
+                <p className="text-text-muted text-xs">{article.author?._count?.followers || 0} followers</p>
+              </div>
+            </Link>
+            <FollowButton authorId={article.authorId} initialFollowing={article.isFollowingAuthor} />
+          </div>
+
           <TiptapEditor content={article.content} editable={false} />
-          <ShareButtons title={article.title} />
+
+          {/* Reactions */}
+          <ReactionBar articleId={article.id} />
+
+          {/* Like + Share */}
+          <div className="flex items-center gap-4 mb-6">
+            <button
+              onClick={handleLike}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                article.isLiked
+                  ? 'bg-red-500/20 border border-red-500/40 text-red-400'
+                  : 'bg-surface-lighter border border-neutral-800 text-text-secondary hover:border-neutral-600'
+              }`}
+            >
+              <Heart size={16} className={article.isLiked ? 'fill-red-400 text-red-400' : ''} />
+              {article._count?.likes || 0}
+            </button>
+            <ShareButtons title={article.title} />
+          </div>
+
+          {/* Tags */}
+          {article.tags?.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-8">
+              {article.tags.map(({ tag }: any) => (
+                <Link
+                  key={tag.id}
+                  href={`/tags/${tag.slug}`}
+                  className="text-xs bg-surface-lighter px-3 py-1 rounded-full text-text-muted hover:text-brand-400 border border-neutral-800 hover:border-neutral-600 transition-colors"
+                >
+                  #{tag.name}
+                </Link>
+              ))}
+            </div>
+          )}
+
+          {/* Subscribe widget */}
+          <div className="mb-8">
+            <SubscribeWidget authorId={article.authorId} authorName={article.author?.name} />
+          </div>
+
+          {/* Comments */}
+          <CommentSection articleId={article.id} />
         </article>
       </div>
     );

@@ -11,9 +11,17 @@ export async function GET(req: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '20');
     const tag = searchParams.get('tag');
     const authorId = searchParams.get('authorId');
-    const status = searchParams.get('status') || 'PUBLISHED';
+    const status = searchParams.get('status'); // undefined = all statuses for owner
 
-    const where: any = { status, author: { username: { not: 'test' } } };
+    const where: any = {};
+    // If querying by authorId without a specific status, allow all (for dashboard/write page)
+    if (status) {
+      where.status = status;
+    } else if (!authorId) {
+      // Public feeds default to PUBLISHED only
+      where.status = 'PUBLISHED';
+      where.author = { username: { not: 'test' } };
+    }
     if (tag) where.tags = { some: { tag: { slug: tag } } };
     if (authorId) { where.authorId = authorId; delete where.author; }
 
@@ -23,7 +31,7 @@ export async function GET(req: NextRequest) {
         include: {
           author: { select: { id: true, name: true, username: true, image: true } },
           tags: { include: { tag: true } },
-          _count: { select: { likes: true, tips: true } },
+          _count: { select: { likes: true, tips: true, comments: true } },
         },
         orderBy: { publishedAt: 'desc' },
         skip: (page - 1) * limit,

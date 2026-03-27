@@ -41,7 +41,7 @@ export default function ArticleCard({ article }: { article: ArticleWithAuthor })
       {article.tags.length > 0 && (
         <div className="flex flex-wrap gap-2 mt-3">
           {article.tags.map(({ tag }) => (
-            <Link key={tag.id} href={`/discover?tag=${tag.slug}`} className="text-xs bg-surface-lighter px-2 py-1 rounded-full text-text-muted hover:text-brand-400">
+            <Link key={tag.id} href={`/tags/${tag.slug}`} className="text-xs bg-surface-lighter px-2 py-1 rounded-full text-text-muted hover:text-brand-400 border border-neutral-800 hover:border-neutral-700 transition-colors">
               #{tag.name}
             </Link>
           ))}
