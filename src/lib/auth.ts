@@ -61,41 +61,61 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async signIn({ user, account, profile }) {
-      // For Google sign-in: clean up any stale/mismatched Google account
-      // records created by previous buggy code, so the callbackHandler's
-      // allowDangerousEmailAccountLinking flow works correctly.
       if (account?.provider === 'google' && profile?.email) {
         try {
-          const existingUser = await prisma.user.findUnique({
+          // Find the user that SHOULD own this Google account (by email)
+          const correctUser = await prisma.user.findUnique({
             where: { email: profile.email },
           });
 
-          if (existingUser) {
-            const matchingAccount = await prisma.account.findUnique({
+          if (correctUser) {
+            // Check if the correct Account link already exists
+            const correctLink = await prisma.account.findFirst({
               where: {
-                provider_providerAccountId: {
-                  provider: 'google',
-                  providerAccountId: account.providerAccountId,
-                },
+                provider: 'google',
+                providerAccountId: account.providerAccountId,
+                userId: correctUser.id,
               },
             });
 
-            if (!matchingAccount) {
-              // Delete stale Google account records for this user
-              // so callbackHandler can create a fresh one via linkAccount
-              const deleted = await prisma.account.deleteMany({
+            if (!correctLink) {
+              // Account is missing or linked to wrong user.
+              // Delete ALL Google accounts with this providerAccountId
+              // (could be linked to an orphan user from a previous bug)
+              await prisma.account.deleteMany({
                 where: {
-                  userId: existingUser.id,
+                  provider: 'google',
+                  providerAccountId: account.providerAccountId,
+                },
+              });
+              // Also delete any stale Google accounts for the correct user
+              await prisma.account.deleteMany({
+                where: {
+                  userId: correctUser.id,
                   provider: 'google',
                 },
               });
-              if (deleted.count > 0) {
-                console.log('[AUTH] Cleaned up', deleted.count, 'stale Google account(s) for user', existingUser.id);
-              }
+              // Create the correct link so callbackHandler finds it
+              await prisma.account.create({
+                data: {
+                  userId: correctUser.id,
+                  type: account.type,
+                  provider: account.provider,
+                  providerAccountId: account.providerAccountId,
+                  refresh_token: account.refresh_token ?? undefined,
+                  access_token: account.access_token ?? undefined,
+                  expires_at: account.expires_at ?? undefined,
+                  token_type: account.token_type ?? undefined,
+                  scope: account.scope ?? undefined,
+                  id_token: account.id_token ?? undefined,
+                  session_state: account.session_state ?? undefined,
+                },
+              });
+              console.log('[AUTH] Fixed Google account link for user', correctUser.id);
             }
           }
         } catch (err: any) {
-          console.error('[AUTH] Error in signIn cleanup:', err.message);
+          console.error('[AUTH] Error in signIn callback:', err.message);
         }
       }
       return true;
@@ -125,3 +145,4 @@ export const authOptions: NextAuthOptions = {
     },
   },
 };
+
