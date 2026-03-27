@@ -1,10 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { signIn } from 'next-auth/react';
+import { signIn, signOut, useSession } from 'next-auth/react';
 import Link from 'next/link';
 
 export default function LoginPage() {
+  const { data: session } = useSession();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -51,7 +52,10 @@ export default function LoginPage() {
 
         <div className="card">
           <button
-            onClick={() => signIn('google', { callbackUrl: '/dashboard' })}
+            onClick={async () => {
+              if (session) await signOut({ redirect: false });
+              signIn('google', { callbackUrl: '/dashboard' });
+            }}
             className="w-full btn-secondary flex items-center justify-center gap-3 mb-6"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
