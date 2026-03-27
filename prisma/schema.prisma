@@ -28,6 +28,18 @@ enum BoardVisibility {
   PRIVATE
 }
 
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+}
+
 model User {
   id             String    @id @default(cuid())
   name           String?
@@ -64,6 +76,7 @@ model User {
   reactions      Reaction[]
   articleViews   ArticleView[]
   subscribers    Subscriber[]
+  supportTickets SupportTicket[]
 
   @@map("users")
 }
@@ -341,6 +354,37 @@ model Subscriber {
   @@unique([email, authorId])
   @@index([authorId])
   @@map("subscribers")
+}
+
+model SupportTicket {
+  id        String         @id @default(cuid())
+  subject   String
+  email     String
+  priority  TicketPriority @default(MEDIUM)
+  status    TicketStatus   @default(OPEN)
+  userId    String?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  user     User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
+  messages TicketMessage[]
+
+  @@index([status])
+  @@index([userId])
+  @@map("support_tickets")
+}
+
+model TicketMessage {
+  id        String   @id @default(cuid())
+  ticketId  String
+  content   String   @db.Text
+  isAdmin   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  ticket SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId])
+  @@map("ticket_messages")
 }
 
 model Challenge {
