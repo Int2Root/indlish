@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import ArticleCard from '@/components/articles/ArticleCard';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import EmptyState from '@/components/ui/EmptyState';
-import { Newspaper, Users } from 'lucide-react';
+import { Newspaper, Users, PenLine } from 'lucide-react';
 import Link from 'next/link';
 import { useCurrentUser } from '@/hooks/use-session';
 
@@ -27,7 +27,8 @@ export default function FeedPage() {
         setArticles(d.data?.articles || []);
         setBoards(d.data?.boards || []);
         setLoading(false);
-      });
+      })
+      .catch(() => setLoading(false));
   }, [feedTab, contentTab]);
 
   return (
@@ -80,10 +81,10 @@ export default function FeedPage() {
           />
         ) : (
           <EmptyState
-            icon={Newspaper}
-            title="Nothing here yet"
-            description="Follow some creators or check out the discover page to fill your feed."
-            action={<Link href="/discover" className="btn-primary">Discover Content</Link>}
+            icon={PenLine}
+            title="No articles published yet"
+            description="Be the first to write! Share your thoughts, stories, and ideas with the indlish community."
+            action={<Link href="/write" className="btn-primary">Write your first article</Link>}
           />
         )
       ) : (

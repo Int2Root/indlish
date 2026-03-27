@@ -63,7 +63,7 @@ export async function GET(req: NextRequest) {
         // Fill with trending if not enough
         if (articles.length < limit) {
           const trending = await prisma.article.findMany({
-            where: { status: 'PUBLISHED', id: { notIn: articles.map(a => a.id) } },
+            where: { status: 'PUBLISHED', author: { username: { not: 'test' } }, id: { notIn: articles.map(a => a.id) } },
             include: {
               author: { select: { id: true, name: true, username: true, image: true } },
               tags: { include: { tag: true } },

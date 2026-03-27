@@ -5,7 +5,8 @@ import { useSearchParams } from 'next/navigation';
 import { useDebounce } from '@/hooks/use-debounce';
 import ArticleCard from '@/components/articles/ArticleCard';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
-import { Search, TrendingUp } from 'lucide-react';
+import EmptyState from '@/components/ui/EmptyState';
+import { Search, TrendingUp, Newspaper } from 'lucide-react';
 import Link from 'next/link';
 
 export default function DiscoverPage() {
@@ -28,10 +29,16 @@ function DiscoverContent() {
 
   useEffect(() => {
     if (debouncedQuery.length >= 2) {
-      fetch(`/api/search?q=${debouncedQuery}`).then(r => r.json()).then(d => { setResults(d.data || {}); setLoading(false); });
+      fetch(`/api/search?q=${debouncedQuery}`)
+        .then(r => r.json())
+        .then(d => { setResults(d.data || {}); setLoading(false); })
+        .catch(() => setLoading(false));
     } else {
       const url = tagFilter ? `/api/articles?tag=${tagFilter}` : '/api/articles?limit=20';
-      fetch(url).then(r => r.json()).then(d => { setTrending(d.data?.articles || []); setLoading(false); });
+      fetch(url)
+        .then(r => r.json())
+        .then(d => { setTrending(d.data?.articles || []); setLoading(false); })
+        .catch(() => setLoading(false));
     }
   }, [debouncedQuery, tagFilter]);
 
@@ -48,6 +55,9 @@ function DiscoverContent() {
 
       {loading ? <LoadingSpinner className="py-16" /> : debouncedQuery.length >= 2 ? (
         <div className="space-y-8">
+          {!results.articles?.length && !results.users?.length && !results.boards?.length && (
+            <EmptyState icon={Search} title="No results found" description={`Nothing matched "${debouncedQuery}". Try a different search term.`} />
+          )}
           {results.articles?.length > 0 && (
             <div><h2 className="text-lg font-semibold mb-4">Articles</h2><div className="space-y-4">{results.articles.map((a: any) => <ArticleCard key={a.id} article={a} />)}</div></div>
           )}
@@ -68,7 +78,19 @@ function DiscoverContent() {
           )}
         </div>
       ) : (
-        <div><h2 className="flex items-center gap-2 text-lg font-semibold mb-4"><TrendingUp size={18} />Trending</h2><div className="space-y-4">{trending.map((a: any) => <ArticleCard key={a.id} article={a} />)}</div></div>
+        <div>
+          <h2 className="flex items-center gap-2 text-lg font-semibold mb-4"><TrendingUp size={18} />Trending</h2>
+          {trending.length === 0 ? (
+            <EmptyState
+              icon={Newspaper}
+              title="No articles published yet"
+              description="Be the first to write! Share your thoughts, stories, and ideas with the indlish community."
+              action={<Link href="/write" className="btn-primary">Write your first article</Link>}
+            />
+          ) : (
+            <div className="space-y-4">{trending.map((a: any) => <ArticleCard key={a.id} article={a} />)}</div>
+          )}
+        </div>
       )}
     </div>
   );
