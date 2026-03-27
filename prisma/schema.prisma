@@ -38,6 +38,7 @@ enum TicketStatus {
   OPEN
   IN_PROGRESS
   RESOLVED
+  CLOSED
 }
 
 model User {
@@ -77,6 +78,7 @@ model User {
   articleViews   ArticleView[]
   subscribers    Subscriber[]
   supportTickets SupportTicket[]
+  ticketMessages TicketMessage[]
 
   @@map("users")
 }
@@ -399,4 +401,49 @@ model Challenge {
 
   @@index([status])
   @@map("challenges")
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+model SupportTicket {
+  id        String         @id @default(cuid())
+  subject   String
+  priority  TicketPriority @default(MEDIUM)
+  status    TicketStatus   @default(OPEN)
+  userId    String
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages TicketMessage[]
+
+  @@index([userId])
+  @@index([status])
+  @@map("support_tickets")
+}
+
+model TicketMessage {
+  id        String   @id @default(cuid())
+  content   String   @db.Text
+  ticketId  String
+  userId    String
+  isStaff   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  ticket SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  user   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId])
+  @@map("ticket_messages")
 }
