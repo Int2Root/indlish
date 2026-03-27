@@ -154,23 +154,23 @@ export default function TicketDetailPage() {
               {ticket.messages?.map((msg: any) => (
                 <div
                   key={msg.id}
-                  className={`flex gap-3 ${msg.isAdmin ? 'flex-row-reverse' : ''}`}
+                  className={`flex gap-3 ${msg.isStaff ? 'flex-row-reverse' : ''}`}
                 >
                   <div
                     className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
-                      msg.isAdmin
+                      msg.isStaff
                         ? 'bg-orange-500/20 text-orange-400'
                         : 'bg-neutral-700 text-neutral-300'
                     }`}
                   >
-                    {msg.isAdmin ? <Shield size={13} /> : (ticket.user?.name || ticket.email)[0].toUpperCase()}
+                    {msg.isStaff ? <Shield size={13} /> : (ticket.user?.name || ticket.email)[0].toUpperCase()}
                   </div>
                   <div
-                    className={`flex-1 max-w-[80%] ${msg.isAdmin ? 'items-end' : 'items-start'} flex flex-col`}
+                    className={`flex-1 max-w-[80%] ${msg.isStaff ? 'items-end' : 'items-start'} flex flex-col`}
                   >
                     <div
                       className={`rounded-xl px-4 py-3 text-sm leading-relaxed ${
-                        msg.isAdmin
+                        msg.isStaff
                           ? 'bg-orange-500/15 border border-orange-500/20 text-white'
                           : 'bg-[#242424] border border-neutral-700/50 text-neutral-200'
                       }`}
@@ -178,7 +178,7 @@ export default function TicketDetailPage() {
                       {msg.content}
                     </div>
                     <span className="text-neutral-600 text-xs mt-1 px-1">
-                      {msg.isAdmin ? 'Admin' : ticket.user?.name || ticket.email} ·{' '}
+                      {msg.isStaff ? 'Admin' : ticket.user?.name || ticket.email} ·{' '}
                       {formatDate(msg.createdAt)}
                     </span>
                   </div>

@@ -39,6 +39,7 @@ export async function POST(req: Request) {
         subject,
         priority,
         userId: session.user.id,
+        email: session.user.email || '',
         messages: {
           create: {
             content: message,

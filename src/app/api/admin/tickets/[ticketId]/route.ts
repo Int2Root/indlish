@@ -59,7 +59,7 @@ export async function PATCH(
         data: {
           ticketId: params.ticketId,
           content: message.trim(),
-          isAdmin: true,
+          isStaff: true,
         },
       });
     }

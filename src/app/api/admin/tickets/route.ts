@@ -67,7 +67,7 @@ export async function POST(request: Request) {
         email: email.trim(),
         userId,
         messages: {
-          create: { content: message.trim(), isAdmin: false },
+          create: { content: message.trim(), isStaff: false },
         },
       },
       include: { messages: true },
