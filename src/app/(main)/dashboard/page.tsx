@@ -70,7 +70,7 @@ export default function DashboardPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-start justify-between gap-4 mb-8">
         <div>
           <h1 className="text-2xl font-bold">Dashboard</h1>
           <p className="text-text-secondary mt-1">
@@ -81,7 +81,7 @@ export default function DashboardPage() {
             </span>
           </p>
         </div>
-        <Link href="/write" className="btn-primary flex items-center gap-2">
+        <Link href="/write" className="btn-primary flex items-center gap-2 shrink-0">
           <PenLine size={16} /> New Article
         </Link>
       </div>
@@ -214,14 +214,14 @@ export default function DashboardPage() {
       {/* Plan upgrade banner */}
       {user?.plan === 'FREE' && (
         <div className="card bg-gradient-to-r from-brand-500/10 to-transparent border-brand-500/20">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <h3 className="font-semibold">Upgrade to Pro</h3>
               <p className="text-text-secondary text-sm mt-1">
                 Unlock unlimited articles, UPI tipping, and advanced analytics.
               </p>
             </div>
-            <Link href="/pricing" className="btn-primary text-sm">Upgrade</Link>
+            <Link href="/pricing" className="btn-primary text-sm shrink-0">Upgrade</Link>
           </div>
         </div>
       )}

@@ -4,7 +4,7 @@
 
 @layer base {
   html { color-scheme: dark; }
-  body { @apply bg-surface text-text-primary antialiased; }
+  body { @apply bg-surface text-text-primary antialiased; overflow-x: hidden; }
 }
 
 @layer components {
@@ -462,6 +462,34 @@
   margin-right: 2px;
   border-radius: 0 !important;
 }
+/* ═══════════════════════════════════════════════════════════════
+   MOBILE RESPONSIVE OVERRIDES (≤ 640px)
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 640px) {
+  .editor-canvas,
+  .reader-canvas {
+    padding: 1.25rem 1rem 5rem;
+  }
+
+  .ProseMirror {
+    font-size: 18px;
+  }
+
+  .editor-topbar,
+  .reader-topbar {
+    padding: 0.6rem 1rem;
+  }
+
+  .reader-subtitle {
+    font-size: 1.1rem;
+  }
+
+  .reader-meta {
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+}
+
 /* Low Data Mode */
 html.low-data img:not([loading]) {
   content-visibility: auto;

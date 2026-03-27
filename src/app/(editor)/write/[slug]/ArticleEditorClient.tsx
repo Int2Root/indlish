@@ -30,7 +30,7 @@ function ShareButtons({ title }: { title: string }) {
   const xUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`;
 
   return (
-    <div className="flex items-center gap-2 mt-6 pt-6 border-t border-neutral-800">
+    <div className="flex flex-wrap items-center gap-2 mt-6 pt-6 border-t border-neutral-800">
       <span className="text-text-muted text-sm mr-1">Share:</span>
       <a
         href={waUrl}
@@ -222,7 +222,7 @@ export default function ArticleEditorPage() {
           </div>
 
           {/* Author + Follow */}
-          <div className="flex items-center justify-between py-4 border-y border-neutral-800 mb-6">
+          <div className="flex items-center justify-between gap-4 py-4 border-y border-neutral-800 mb-6">
             <Link href={`/profile/${article.author?.username}`} className="flex items-center gap-3 group">
               {article.author?.image ? (
                 <img src={article.author.image} alt="" className="w-10 h-10 rounded-full" />
@@ -245,7 +245,7 @@ export default function ArticleEditorPage() {
           <ReactionBar articleId={article.id} />
 
           {/* Like + Share */}
-          <div className="flex items-center gap-4 mb-6">
+          <div className="flex flex-wrap items-center gap-3 mb-6">
             <button
               onClick={handleLike}
               className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${
