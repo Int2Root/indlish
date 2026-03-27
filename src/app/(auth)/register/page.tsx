@@ -4,29 +4,34 @@ import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import Link from 'next/link';
 
+type FieldErrors = { name?: string; email?: string; password?: string };
+
+function validate(name: string, email: string, password: string): FieldErrors {
+  const errs: FieldErrors = {};
+  if (!name.trim()) errs.name = 'Name is required';
+  else if (name.trim().length < 2) errs.name = 'Name must be at least 2 characters';
+  if (!email) errs.email = 'Email is required';
+  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errs.email = 'Enter a valid email address';
+  if (!password) errs.password = 'Password is required';
+  else if (password.length < 8) errs.password = 'Password must be at least 8 characters';
+  else if (!/[A-Za-z]/.test(password) || !/[0-9]/.test(password)) errs.password = 'Use a mix of letters and numbers';
+  return errs;
+}
+
 export default function RegisterPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [error, setError] = useState('');
-  const [fieldErrors, setFieldErrors] = useState<{ name?: string; email?: string; password?: string }>({});
   const [loading, setLoading] = useState(false);
 
-  const validate = () => {
-    const errs: { name?: string; email?: string; password?: string } = {};
-    if (!name.trim()) errs.name = 'Name is required';
-    else if (name.trim().length < 2) errs.name = 'Name must be at least 2 characters';
-    if (!email) errs.email = 'Email is required';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errs.email = 'Enter a valid email address';
-    if (!password) errs.password = 'Password is required';
-    else if (password.length < 8) errs.password = 'Password must be at least 8 characters';
-    else if (!/[A-Za-z]/.test(password) || !/[0-9]/.test(password)) errs.password = 'Use a mix of letters and numbers';
-    return errs;
-  };
+  const clearFieldError = (field: keyof FieldErrors) =>
+    setFieldErrors((prev) => ({ ...prev, [field]: undefined }));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const errs = validate();
+    const errs = validate(name, email, password);
     if (Object.keys(errs).length > 0) { setFieldErrors(errs); return; }
     setFieldErrors({});
     setLoading(true);
@@ -49,7 +54,6 @@ export default function RegisterPage() {
 
       const signInResult = await signIn('credentials', { email, password, redirect: false });
       if (signInResult?.error) {
-        // Registration succeeded but auto-login failed — send to login page
         window.location.href = '/login';
         return;
       }
@@ -96,24 +100,27 @@ export default function RegisterPage() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
             <div>
               <label className="block text-sm font-medium text-text-secondary mb-1">Name</label>
-              <input type="text" value={name} onChange={(e) => { setName(e.target.value); setFieldErrors(p => ({ ...p, name: undefined })); }}
+              <input type="text" value={name} onChange={(e) => { setName(e.target.value); clearFieldError('name'); }}
                 className={`input-field w-full ${fieldErrors.name ? 'border-red-500/60' : ''}`} placeholder="Your name" />
               {fieldErrors.name && <p className="text-red-400 text-xs mt-1">{fieldErrors.name}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium text-text-secondary mb-1">Email</label>
-              <input type="email" value={email} onChange={(e) => { setEmail(e.target.value); setFieldErrors(p => ({ ...p, email: undefined })); }}
+              <input type="email" value={email} onChange={(e) => { setEmail(e.target.value); clearFieldError('email'); }}
                 className={`input-field w-full ${fieldErrors.email ? 'border-red-500/60' : ''}`} placeholder="you@example.com" />
               {fieldErrors.email && <p className="text-red-400 text-xs mt-1">{fieldErrors.email}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium text-text-secondary mb-1">Password</label>
-              <input type="password" value={password} onChange={(e) => { setPassword(e.target.value); setFieldErrors(p => ({ ...p, password: undefined })); }}
-                className={`input-field w-full ${fieldErrors.password ? 'border-red-500/60' : ''}`} placeholder="Minimum 8 characters" />
+              <input type="password" value={password} onChange={(e) => { setPassword(e.target.value); clearFieldError('password'); }}
+                className={`input-field w-full ${fieldErrors.password ? 'border-red-500/60' : ''}`} placeholder="Min 8 chars, include letters and numbers" />
               {fieldErrors.password && <p className="text-red-400 text-xs mt-1">{fieldErrors.password}</p>}
+              {!fieldErrors.password && password.length > 0 && password.length < 8 && (
+                <p className="text-yellow-500/70 text-xs mt-1">{8 - password.length} more characters needed</p>
+              )}
             </div>
             <button type="submit" disabled={loading} className="w-full btn-primary">
               {loading ? 'Creating account...' : 'Create Account'}

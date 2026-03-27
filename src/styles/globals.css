@@ -353,9 +353,10 @@
 .ProseMirror li { margin-bottom: 0.25rem; }
 
 /* Placeholder */
-.ProseMirror p.is-editor-empty:first-child::before {
+.ProseMirror p.is-editor-empty:first-child::before,
+.ProseMirror p.is-empty:first-child::before {
   content: attr(data-placeholder);
-  color: #3d3d3d;
+  color: #555;
   float: left;
   height: 0;
   pointer-events: none;

@@ -2,6 +2,15 @@ import { NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { successResponse, errorResponse, getAuthSession } from '@/lib/api-helpers';
 import { articleSchema } from '@/lib/validations';
+import { getReadingTime } from '@/lib/utils';
+
+function extractTextFromDoc(doc: any): string {
+  if (!doc) return '';
+  if (typeof doc === 'string') return doc;
+  if (doc.type === 'text' && doc.text) return doc.text;
+  if (Array.isArray(doc.content)) return doc.content.map(extractTextFromDoc).join(' ');
+  return '';
+}
 
 export async function GET(req: NextRequest, { params }: { params: { articleId: string } }) {
   try {
@@ -37,10 +46,16 @@ export async function PATCH(req: NextRequest, { params }: { params: { articleId:
     const body = await req.json();
     const { tags, ...validated } = articleSchema.partial().parse(body);
 
+    // Recalculate reading time whenever content is saved
+    const readingTimeUpdate = validated.content
+      ? { readingTime: getReadingTime(extractTextFromDoc(validated.content)) }
+      : {};
+
     const updated = await prisma.article.update({
       where: { id: params.articleId },
       data: {
         ...validated,
+        ...readingTimeUpdate,
         publishedAt: validated.status === 'PUBLISHED' && !article.publishedAt ? new Date() : article.publishedAt,
         ...(tags ? {
           tags: {

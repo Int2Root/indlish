@@ -1,8 +1,12 @@
 'use client';
 
 import Link from 'next/link';
+<<<<<<< HEAD
 import { useState } from 'react';
 import { PenLine, BookOpen, LayoutGrid, Sparkles, IndianRupee, Menu, X } from 'lucide-react';
+=======
+import { PenLine, BookOpen, LayoutGrid, Sparkles, IndianRupee } from 'lucide-react';
+>>>>>>> b10b2ce (feat: Phase 1 — bug fixes + essential features for world-class indlish)
 import Footer from '@/components/layout/Footer';
 
 export default function HomePage() {
@@ -16,6 +20,7 @@ export default function HomePage() {
   ];
 
   return (
+<<<<<<< HEAD
     <div className="min-h-screen bg-surface flex flex-col">
       <nav className="sticky top-0 z-50 bg-surface/80 backdrop-blur-xl border-b border-neutral-800">
         <div className="flex items-center justify-between max-w-7xl mx-auto px-4 sm:px-6 h-16">
@@ -29,6 +34,14 @@ export default function HomePage() {
           <button className="sm:hidden p-2 text-text-secondary" onClick={() => setMobileOpen(!mobileOpen)} aria-label="Toggle menu">
             {mobileOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
+=======
+    <div className="min-h-screen bg-surface">
+      <nav className="flex items-center justify-between max-w-7xl mx-auto px-4 sm:px-6 py-4">
+        <Link href="/" className="text-2xl font-bold text-brand-400">indlish</Link>
+        <div className="flex items-center gap-3">
+          <Link href="/login" className="btn-ghost text-sm">Sign In</Link>
+          <Link href="/register" className="btn-primary text-sm">Start Writing — It's Free</Link>
+>>>>>>> b10b2ce (feat: Phase 1 — bug fixes + essential features for world-class indlish)
         </div>
         {mobileOpen && (
           <div className="sm:hidden border-t border-neutral-800 bg-surface px-4 pb-4">
