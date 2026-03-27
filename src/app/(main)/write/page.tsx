@@ -107,8 +107,10 @@ export default function WritePage() {
                 <h3 className="font-medium group-hover:text-brand-400 transition-colors truncate">
                   {article.title}
                 </h3>
-                {article.excerpt && (
+                {article.excerpt && !article.excerpt.startsWith('{"type":"doc"') ? (
                   <p className="text-text-muted text-sm mt-0.5 truncate">{article.excerpt}</p>
+                ) : article.status === 'DRAFT' && (
+                  <p className="text-text-muted/50 text-sm mt-0.5 truncate italic">No content yet</p>
                 )}
               </div>
               <div className="flex items-center gap-4 text-text-muted text-sm shrink-0">
