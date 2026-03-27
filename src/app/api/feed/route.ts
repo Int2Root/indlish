@@ -8,6 +8,7 @@ export async function GET(req: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
     const type = searchParams.get('type') || 'all';
+    const feed = searchParams.get('feed') || 'trending'; // 'trending' or 'following'
 
     const session = await getAuthSession();
     const skip = (page - 1) * limit;
@@ -18,43 +19,62 @@ export async function GET(req: NextRequest) {
     if (type === 'all' || type === 'articles') {
       const whereArticle: any = { status: 'PUBLISHED' };
 
-      // If logged in, prioritize followed creators
-      if (session?.user) {
+      if (feed === 'following' && session?.user) {
+        // Following feed — only articles from followed creators
         const following = await prisma.follow.findMany({
           where: { followerId: session.user.id },
           select: { followingId: true },
         });
         const followingIds = following.map(f => f.followingId);
-
-        if (followingIds.length > 0) {
-          articles = await prisma.article.findMany({
-            where: { ...whereArticle, authorId: { in: followingIds } },
-            include: {
-              author: { select: { id: true, name: true, username: true, image: true } },
-              tags: { include: { tag: true } },
-              _count: { select: { likes: true, tips: true } },
-            },
-            orderBy: { publishedAt: 'desc' },
-            take: limit,
-            skip,
-          });
-        }
-      }
-
-      // Fill with trending if not enough
-      if (articles.length < limit) {
-        const trending = await prisma.article.findMany({
-          where: { status: 'PUBLISHED', id: { notIn: articles.map(a => a.id) } },
+        articles = await prisma.article.findMany({
+          where: { ...whereArticle, authorId: { in: followingIds } },
           include: {
             author: { select: { id: true, name: true, username: true, image: true } },
             tags: { include: { tag: true } },
             _count: { select: { likes: true, tips: true } },
           },
-          orderBy: [{ views: 'desc' }, { publishedAt: 'desc' }],
-          take: limit - articles.length,
-          skip: articles.length > 0 ? 0 : skip,
+          orderBy: { publishedAt: 'desc' },
+          take: limit,
+          skip,
         });
-        articles = [...articles, ...trending];
+      } else {
+        // Trending feed
+        if (session?.user) {
+          const following = await prisma.follow.findMany({
+            where: { followerId: session.user.id },
+            select: { followingId: true },
+          });
+          const followingIds = following.map(f => f.followingId);
+          if (followingIds.length > 0) {
+            articles = await prisma.article.findMany({
+              where: { ...whereArticle, authorId: { in: followingIds } },
+              include: {
+                author: { select: { id: true, name: true, username: true, image: true } },
+                tags: { include: { tag: true } },
+                _count: { select: { likes: true, tips: true } },
+              },
+              orderBy: { publishedAt: 'desc' },
+              take: limit,
+              skip,
+            });
+          }
+        }
+
+        // Fill with trending if not enough
+        if (articles.length < limit) {
+          const trending = await prisma.article.findMany({
+            where: { status: 'PUBLISHED', id: { notIn: articles.map(a => a.id) } },
+            include: {
+              author: { select: { id: true, name: true, username: true, image: true } },
+              tags: { include: { tag: true } },
+              _count: { select: { likes: true, tips: true } },
+            },
+            orderBy: [{ views: 'desc' }, { publishedAt: 'desc' }],
+            take: limit - articles.length,
+            skip: articles.length > 0 ? 0 : skip,
+          });
+          articles = [...articles, ...trending];
+        }
       }
     }
 

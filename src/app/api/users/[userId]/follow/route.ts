@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
-import { successResponse, errorResponse, requireAuth } from '@/lib/api-helpers';
+import { successResponse, errorResponse, requireAuth, getAuthSession } from '@/lib/api-helpers';
 
 export async function POST(req: NextRequest, { params }: { params: { userId: string } }) {
   try {
@@ -27,5 +27,20 @@ export async function POST(req: NextRequest, { params }: { params: { userId: str
     return successResponse({ followed: true });
   } catch {
     return errorResponse('Failed to follow', 500);
+  }
+}
+
+export async function GET(req: NextRequest, { params }: { params: { userId: string } }) {
+  try {
+    const session = await getAuthSession();
+    if (!session) return successResponse({ following: false });
+
+    const follow = await prisma.follow.findUnique({
+      where: { followerId_followingId: { followerId: session.user.id, followingId: params.userId } },
+    });
+
+    return successResponse({ following: !!follow });
+  } catch {
+    return errorResponse('Failed to check follow status', 500);
   }
 }
