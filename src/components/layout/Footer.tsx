@@ -21,21 +21,27 @@ export default function Footer() {
           <div>
             <h4 className="font-medium text-text-primary mb-3 text-sm">Pricing</h4>
             <div className="space-y-2">
-              <p className="text-text-muted text-sm">Free — Get started</p>
-              <p className="text-text-muted text-sm">Pro ₹99/mo</p>
-              <p className="text-text-muted text-sm">Pro+ ₹199/mo</p>
+              <Link href="/pricing" className="block text-text-muted text-sm hover:text-brand-400">Free — Get started</Link>
+              <Link href="/pricing" className="block text-text-muted text-sm hover:text-brand-400">Pro ₹99/mo</Link>
+              <Link href="/pricing" className="block text-text-muted text-sm hover:text-brand-400">Pro+ ₹199/mo</Link>
             </div>
           </div>
           <div>
-            <h4 className="font-medium text-text-primary mb-3 text-sm">Contact</h4>
+            <h4 className="font-medium text-text-primary mb-3 text-sm">Company</h4>
             <div className="space-y-2">
               <a href="mailto:hello@int2root.com" className="block text-text-muted text-sm hover:text-brand-400">hello@int2root.com</a>
               <a href="mailto:support@indlish.com" className="block text-text-muted text-sm hover:text-brand-400">support@indlish.com</a>
+              <Link href="/legal/terms" className="block text-text-muted text-sm hover:text-brand-400">Terms of Service</Link>
+              <Link href="/legal/privacy" className="block text-text-muted text-sm hover:text-brand-400">Privacy Policy</Link>
             </div>
           </div>
         </div>
-        <div className="border-t border-neutral-800 mt-8 pt-8 text-center text-text-muted text-xs">
-          © {new Date().getFullYear()} Int2Root. All rights reserved.
+        <div className="border-t border-neutral-800 mt-8 pt-8 flex flex-col sm:flex-row items-center justify-between gap-2 text-text-muted text-xs">
+          <span>© {new Date().getFullYear()} Int2Root. All rights reserved.</span>
+          <div className="flex gap-4">
+            <Link href="/legal/terms" className="hover:text-brand-400">Terms</Link>
+            <Link href="/legal/privacy" className="hover:text-brand-400">Privacy</Link>
+          </div>
         </div>
       </div>
     </footer>

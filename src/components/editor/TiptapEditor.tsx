@@ -78,7 +78,7 @@ interface TiptapEditorProps {
 export default function TiptapEditor({
   content,
   onChange,
-  placeholder = 'Tell your story...',
+  placeholder = 'Start writing your story...',
   editable = true,
 }: TiptapEditorProps) {
   const [showInsert, setShowInsert] = useState(false);
