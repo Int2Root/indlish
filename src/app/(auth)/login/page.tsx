@@ -8,10 +8,22 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
   const [loading, setLoading] = useState(false);
+
+  const validate = () => {
+    const errs: { email?: string; password?: string } = {};
+    if (!email) errs.email = 'Email is required';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errs.email = 'Enter a valid email address';
+    if (!password) errs.password = 'Password is required';
+    return errs;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const errs = validate();
+    if (Object.keys(errs).length > 0) { setFieldErrors(errs); return; }
+    setFieldErrors({});
     setLoading(true);
     setError('');
 
@@ -71,11 +83,11 @@ export default function LoginPage() {
               <input
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="input-field w-full"
+                onChange={(e) => { setEmail(e.target.value); setFieldErrors(p => ({ ...p, email: undefined })); }}
+                className={`input-field w-full ${fieldErrors.email ? 'border-red-500/60' : ''}`}
                 placeholder="you@example.com"
-                required
               />
+              {fieldErrors.email && <p className="text-red-400 text-xs mt-1">{fieldErrors.email}</p>}
             </div>
             <div>
               <div className="flex items-center justify-between mb-1">
@@ -87,11 +99,11 @@ export default function LoginPage() {
               <input
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="input-field w-full"
+                onChange={(e) => { setPassword(e.target.value); setFieldErrors(p => ({ ...p, password: undefined })); }}
+                className={`input-field w-full ${fieldErrors.password ? 'border-red-500/60' : ''}`}
                 placeholder="••••••••"
-                required
               />
+              {fieldErrors.password && <p className="text-red-400 text-xs mt-1">{fieldErrors.password}</p>}
             </div>
             <button type="submit" disabled={loading} className="w-full btn-primary">
               {loading ? 'Signing in...' : 'Sign In'}

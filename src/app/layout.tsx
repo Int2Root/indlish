@@ -17,6 +17,13 @@ export const metadata: Metadata = {
     url: 'https://indlish.com',
     siteName: 'indlish',
     type: 'website',
+    images: [{ url: 'https://indlish.com/og-default.png', width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'indlish — Write. Organize. Curate.',
+    description: 'India-native creator platform by Int2Root.',
+    images: ['https://indlish.com/og-default.png'],
   },
 };
 

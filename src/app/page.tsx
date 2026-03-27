@@ -1,7 +1,13 @@
+'use client';
+
 import Link from 'next/link';
-import { PenLine, BookOpen, LayoutGrid, Sparkles, IndianRupee } from 'lucide-react';
+import { useState } from 'react';
+import { PenLine, BookOpen, LayoutGrid, Sparkles, IndianRupee, Menu, X } from 'lucide-react';
+import Footer from '@/components/layout/Footer';
 
 export default function HomePage() {
+  const [mobileOpen, setMobileOpen] = useState(false);
+
   const features = [
     { icon: PenLine, title: 'Write', desc: 'Publish beautiful articles with a powerful rich text editor. Get discovered by readers across India.' },
     { icon: BookOpen, title: 'Organize', desc: 'Private notebooks for your ideas. Block-based editor, folders, quick notes — your digital brain.' },
@@ -10,13 +16,30 @@ export default function HomePage() {
   ];
 
   return (
-    <div className="min-h-screen bg-surface">
-      <nav className="flex items-center justify-between max-w-7xl mx-auto px-4 sm:px-6 py-4">
-        <span className="text-2xl font-bold text-brand-400">indlish</span>
-        <div className="flex items-center gap-3">
-          <Link href="/login" className="btn-ghost text-sm">Sign In</Link>
-          <Link href="/register" className="btn-primary text-sm">Start Writing — It's Free</Link>
+    <div className="min-h-screen bg-surface flex flex-col">
+      <nav className="sticky top-0 z-50 bg-surface/80 backdrop-blur-xl border-b border-neutral-800">
+        <div className="flex items-center justify-between max-w-7xl mx-auto px-4 sm:px-6 h-16">
+          <Link href="/" className="text-2xl font-bold text-brand-400">indlish</Link>
+          <div className="hidden sm:flex items-center gap-3">
+            <Link href="/discover" className="text-sm text-text-secondary hover:text-text-primary">Discover</Link>
+            <Link href="/pricing" className="text-sm text-text-secondary hover:text-text-primary">Pricing</Link>
+            <Link href="/login" className="btn-ghost text-sm">Sign In</Link>
+            <Link href="/register" className="btn-primary text-sm">Start Writing — It's Free</Link>
+          </div>
+          <button className="sm:hidden p-2 text-text-secondary" onClick={() => setMobileOpen(!mobileOpen)} aria-label="Toggle menu">
+            {mobileOpen ? <X size={22} /> : <Menu size={22} />}
+          </button>
         </div>
+        {mobileOpen && (
+          <div className="sm:hidden border-t border-neutral-800 bg-surface px-4 pb-4">
+            <Link href="/discover" className="block py-3 text-text-secondary border-b border-neutral-800" onClick={() => setMobileOpen(false)}>Discover</Link>
+            <Link href="/pricing" className="block py-3 text-text-secondary border-b border-neutral-800" onClick={() => setMobileOpen(false)}>Pricing</Link>
+            <div className="flex gap-2 mt-3">
+              <Link href="/login" className="btn-ghost text-sm flex-1 text-center">Sign In</Link>
+              <Link href="/register" className="btn-primary text-sm flex-1 text-center">Get Started</Link>
+            </div>
+          </div>
+        )}
       </nav>
 
       <section className="max-w-4xl mx-auto px-4 sm:px-6 pt-20 pb-16 text-center">
@@ -50,7 +73,8 @@ export default function HomePage() {
       </section>
 
       <section className="max-w-4xl mx-auto px-4 sm:px-6 py-16">
-        <h2 className="text-3xl font-bold text-center mb-12">Simple pricing, powerful features</h2>
+        <h2 className="text-3xl font-bold text-center mb-4">Simple pricing, powerful features</h2>
+        <p className="text-text-secondary text-center mb-12"><Link href="/pricing" className="text-brand-400 hover:underline">See full pricing details →</Link></p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="card text-center">
             <h3 className="text-lg font-semibold mb-2">Free</h3>
@@ -80,10 +104,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <footer className="border-t border-neutral-800 py-8 text-center text-text-muted text-sm">
-        <p>Built with ❤️ by <a href="mailto:hello@int2root.com" className="text-brand-400">Int2Root</a></p>
-        <p className="mt-1">© {new Date().getFullYear()} Int2Root. All rights reserved.</p>
-      </footer>
+      <Footer />
     </div>
   );
 }
