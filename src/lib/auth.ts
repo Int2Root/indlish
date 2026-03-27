@@ -4,6 +4,7 @@ import GoogleProvider from 'next-auth/providers/google';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
 import prisma from './prisma';
+import { sendWelcomeEmail } from './email';
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -38,7 +39,19 @@ export const authOptions: NextAuthOptions = {
   pages: {
     signIn: '/login',
     newUser: '/settings',
-  },  callbacks: {
+  },
+  events: {
+    async createUser({ user }) {
+      // Google OAuth users have no password; credentials users are handled by the register route
+      if (user.email) {
+        const dbUser = await prisma.user.findUnique({ where: { id: user.id }, select: { password: true } });
+        if (!dbUser?.password) {
+          sendWelcomeEmail(user.email, user.name).catch(console.error);
+        }
+      }
+    },
+  },
+  callbacks: {
     async jwt({ token, user }) {
       if (user) {
         const dbUser = await prisma.user.findUnique({ where: { id: user.id } });

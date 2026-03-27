@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { successResponse, errorResponse, getAuthSession } from '@/lib/api-helpers';
+import { sendCommentNotification } from '@/lib/email';
 
 export async function GET(req: NextRequest, { params }: { params: { articleId: string } }) {
   try {
@@ -32,7 +33,10 @@ export async function POST(req: NextRequest, { params }: { params: { articleId: 
     if (!content?.trim()) return errorResponse('Comment cannot be empty', 400);
     if (content.length > 2000) return errorResponse('Comment too long (max 2000 chars)', 400);
 
-    const article = await prisma.article.findUnique({ where: { id: params.articleId } });
+    const article = await prisma.article.findUnique({
+      where: { id: params.articleId },
+      select: { id: true, title: true, slug: true, authorId: true, author: { select: { email: true, name: true } } },
+    });
     if (!article) return errorResponse('Article not found', 404);
 
     const comment = await prisma.comment.create({
@@ -47,6 +51,18 @@ export async function POST(req: NextRequest, { params }: { params: { articleId: 
         replies: { include: { author: { select: { id: true, name: true, username: true, image: true } } } },
       },
     });
+
+    // Notify the article author if the commenter is someone else (fire and forget)
+    const commenterId = (session.user as any).id;
+    if (article.authorId !== commenterId && article.author.email) {
+      sendCommentNotification({
+        authorEmail: article.author.email,
+        authorName: article.author.name || 'there',
+        commenterName: session.user.name || 'Someone',
+        articleTitle: article.title,
+        articleSlug: article.slug,
+      }).catch(console.error);
+    }
 
     return successResponse(comment, 201);
   } catch (error: any) {

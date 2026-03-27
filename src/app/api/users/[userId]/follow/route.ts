@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { successResponse, errorResponse, requireAuth, getAuthSession } from '@/lib/api-helpers';
+import { sendFollowerNotification } from '@/lib/email';
 
 export async function POST(req: NextRequest, { params }: { params: { userId: string } }) {
   try {
@@ -23,6 +24,20 @@ export async function POST(req: NextRequest, { params }: { params: { userId: str
     await prisma.follow.create({
       data: { followerId: session.user.id, followingId: userId },
     });
+
+    // Notify the followed author (fire and forget)
+    const [follower, author] = await Promise.all([
+      prisma.user.findUnique({ where: { id: session.user.id }, select: { name: true, username: true } }),
+      prisma.user.findUnique({ where: { id: userId }, select: { email: true, name: true } }),
+    ]);
+    if (author?.email && follower) {
+      sendFollowerNotification({
+        authorEmail: author.email,
+        authorName: author.name || 'there',
+        followerName: follower.name || 'Someone',
+        followerUsername: follower.username,
+      }).catch(console.error);
+    }
 
     return successResponse({ followed: true });
   } catch {
