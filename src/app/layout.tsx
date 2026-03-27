@@ -3,6 +3,8 @@ import { Inter } from 'next/font/google';
 import '@/styles/globals.css';
 import { Toaster } from 'sonner';
 import AuthProvider from '@/components/layout/AuthProvider';
+import ServiceWorkerRegistrar from '@/components/layout/ServiceWorkerRegistrar';
+import InstallPrompt from '@/components/layout/InstallPrompt';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -11,6 +13,8 @@ export const metadata: Metadata = {
   description: 'India-native creator platform. Write articles, organize notes, curate boards. By Int2Root.',
   keywords: ['writing', 'blogging', 'notes', 'curation', 'India', 'creator platform'],
   authors: [{ name: 'Int2Root', url: 'https://int2root.com' }],
+  manifest: '/manifest.json',
+  appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'indlish' },
   openGraph: {
     title: 'indlish — Write. Organize. Curate.',
     description: 'India-native creator platform by Int2Root.',
@@ -32,6 +36,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className="dark">
       <body className={inter.className}>
         <AuthProvider>
+          <ServiceWorkerRegistrar />
+          <InstallPrompt />
           {children}
           <Toaster theme="dark" position="bottom-right" richColors />
         </AuthProvider>

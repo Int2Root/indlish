@@ -42,6 +42,9 @@ model User {
   socialLinks          Json?
   passwordResetToken   String?   @unique
   passwordResetExpiry  DateTime?
+  upiId                String?
+  referralCode         String?   @unique
+  referredById         String?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
@@ -336,4 +339,18 @@ model Subscriber {
   @@unique([email, authorId])
   @@index([authorId])
   @@map("subscribers")
+}
+
+model Challenge {
+  id          String   @id @default(cuid())
+  title       String
+  description String   @db.Text
+  deadline    DateTime
+  tagSlug     String
+  prize       String?
+  status      String   @default("active")
+  createdAt   DateTime @default(now())
+
+  @@index([status])
+  @@map("challenges")
 }

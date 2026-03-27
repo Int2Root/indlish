@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useCurrentUser } from '@/hooks/use-session';
 import {
   FileText, Eye, Heart, IndianRupee, TrendingUp, PenLine,
-  MessageCircle, Users, Mail, BarChart2, BookOpen, LayoutGrid
+  MessageCircle, Users, Mail, BarChart2, BookOpen, LayoutGrid, Gift
 } from 'lucide-react';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import { formatNumber, formatCurrency, formatDate } from '@/lib/utils';
@@ -38,6 +38,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const [analytics, setAnalytics] = useState<any>(null);
   const [tips, setTips] = useState<any>(null);
+  const [referral, setReferral] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -46,9 +47,11 @@ export default function DashboardPage() {
       Promise.all([
         fetch('/api/analytics').then((r) => r.json()),
         fetch('/api/tips?type=received').then((r) => r.json()),
-      ]).then(([analyticsData, tipsData]) => {
+        fetch('/api/referral').then((r) => r.json()),
+      ]).then(([analyticsData, tipsData, referralData]) => {
         setAnalytics(analyticsData.data || null);
         setTips(tipsData.data || null);
+        setReferral(referralData.data || null);
         setLoading(false);
       });
     }
@@ -61,7 +64,7 @@ export default function DashboardPage() {
     { label: 'Total Likes', value: formatNumber(analytics?.totalLikes || 0), icon: Heart, color: 'text-pink-400', bg: 'bg-pink-500/10' },
     { label: 'Comments', value: formatNumber(analytics?.totalComments || 0), icon: MessageCircle, color: 'text-purple-400', bg: 'bg-purple-500/10' },
     { label: 'Followers', value: formatNumber(analytics?.followerCount || 0), icon: Users, color: 'text-green-400', bg: 'bg-green-500/10' },
-    { label: 'Subscribers', value: formatNumber(analytics?.subscriberCount || 0), icon: Mail, color: 'text-yellow-400', bg: 'bg-yellow-500/10' },
+    { label: 'Referrals', value: formatNumber(referral?.referralCount || 0), icon: Gift, color: 'text-brand-400', bg: 'bg-brand-500/10' },
     { label: 'Tips Earned', value: formatCurrency(tips?.totalEarnings || 0), icon: IndianRupee, color: 'text-orange-400', bg: 'bg-orange-500/10' },
   ];
 
@@ -196,6 +199,13 @@ export default function DashboardPage() {
             <Link href="/settings" className="flex items-center gap-3 p-3 rounded-lg hover:bg-surface-lighter transition-colors group">
               <Mail size={16} className="text-text-muted group-hover:text-brand-400" />
               <span className="text-sm">Settings</span>
+            </Link>
+            <Link href="/referral" className="flex items-center gap-3 p-3 rounded-lg hover:bg-surface-lighter transition-colors group">
+              <Gift size={16} className="text-text-muted group-hover:text-brand-400" />
+              <span className="text-sm flex-1">Invite Friends</span>
+              {referral?.referralCount > 0 && (
+                <span className="text-xs bg-brand-500/20 text-brand-400 px-2 py-0.5 rounded-full">{referral.referralCount} invited</span>
+              )}
             </Link>
           </div>
         </div>

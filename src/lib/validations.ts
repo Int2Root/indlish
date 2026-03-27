@@ -56,6 +56,7 @@ export const profileSchema = z.object({
     website: z.string().optional(),
     linkedin: z.string().optional(),
   }).optional(),
+  upiId: z.string().max(50).optional().or(z.literal('')),
 });
 
 export const tipSchema = z.object({

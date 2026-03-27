@@ -1,8 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { signIn } from 'next-auth/react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { Suspense } from 'react';
 
 type FieldErrors = { name?: string; email?: string; password?: string };
 
@@ -19,6 +21,16 @@ function validate(name: string, email: string, password: string): FieldErrors {
 }
 
 export default function RegisterPage() {
+  return (
+    <Suspense>
+      <RegisterContent />
+    </Suspense>
+  );
+}
+
+function RegisterContent() {
+  const searchParams = useSearchParams();
+  const refCode = searchParams.get('ref') || '';
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -41,7 +53,7 @@ export default function RegisterPage() {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ name, email, password, referralCode: refCode || undefined }),
       });
 
       const data = await res.json();
@@ -70,6 +82,11 @@ export default function RegisterPage() {
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-brand-400">indlish</h1>
           <p className="text-text-secondary mt-2">Create your account — start writing, curating, sharing</p>
+          {refCode && (
+            <div className="mt-3 bg-brand-500/10 border border-brand-500/20 rounded-lg px-3 py-2 text-sm text-brand-400 inline-block">
+              🎁 Referred by a friend — you&apos;ll both get perks!
+            </div>
+          )}
         </div>
 
         <div className="card">

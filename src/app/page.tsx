@@ -1,12 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-<<<<<<< HEAD
 import { useState } from 'react';
 import { PenLine, BookOpen, LayoutGrid, Sparkles, IndianRupee, Menu, X } from 'lucide-react';
-=======
-import { PenLine, BookOpen, LayoutGrid, Sparkles, IndianRupee } from 'lucide-react';
->>>>>>> b10b2ce (feat: Phase 1 — bug fixes + essential features for world-class indlish)
 import Footer from '@/components/layout/Footer';
 
 export default function HomePage() {
@@ -20,32 +16,25 @@ export default function HomePage() {
   ];
 
   return (
-<<<<<<< HEAD
     <div className="min-h-screen bg-surface flex flex-col">
       <nav className="sticky top-0 z-50 bg-surface/80 backdrop-blur-xl border-b border-neutral-800">
         <div className="flex items-center justify-between max-w-7xl mx-auto px-4 sm:px-6 h-16">
           <Link href="/" className="text-2xl font-bold text-brand-400">indlish</Link>
           <div className="hidden sm:flex items-center gap-3">
             <Link href="/discover" className="text-sm text-text-secondary hover:text-text-primary">Discover</Link>
+            <Link href="/challenges" className="text-sm text-text-secondary hover:text-text-primary">Challenges</Link>
             <Link href="/pricing" className="text-sm text-text-secondary hover:text-text-primary">Pricing</Link>
             <Link href="/login" className="btn-ghost text-sm">Sign In</Link>
-            <Link href="/register" className="btn-primary text-sm">Start Writing — It's Free</Link>
+            <Link href="/register" className="btn-primary text-sm">Start Writing — It&apos;s Free</Link>
           </div>
           <button className="sm:hidden p-2 text-text-secondary" onClick={() => setMobileOpen(!mobileOpen)} aria-label="Toggle menu">
             {mobileOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
-=======
-    <div className="min-h-screen bg-surface">
-      <nav className="flex items-center justify-between max-w-7xl mx-auto px-4 sm:px-6 py-4">
-        <Link href="/" className="text-2xl font-bold text-brand-400">indlish</Link>
-        <div className="flex items-center gap-3">
-          <Link href="/login" className="btn-ghost text-sm">Sign In</Link>
-          <Link href="/register" className="btn-primary text-sm">Start Writing — It's Free</Link>
->>>>>>> b10b2ce (feat: Phase 1 — bug fixes + essential features for world-class indlish)
         </div>
         {mobileOpen && (
           <div className="sm:hidden border-t border-neutral-800 bg-surface px-4 pb-4">
             <Link href="/discover" className="block py-3 text-text-secondary border-b border-neutral-800" onClick={() => setMobileOpen(false)}>Discover</Link>
+            <Link href="/challenges" className="block py-3 text-text-secondary border-b border-neutral-800" onClick={() => setMobileOpen(false)}>Challenges</Link>
             <Link href="/pricing" className="block py-3 text-text-secondary border-b border-neutral-800" onClick={() => setMobileOpen(false)}>Pricing</Link>
             <div className="flex gap-2 mt-3">
               <Link href="/login" className="btn-ghost text-sm flex-1 text-center">Sign In</Link>
@@ -71,6 +60,7 @@ export default function HomePage() {
           <Link href="/discover" className="btn-secondary text-lg px-8 py-3">Explore Content</Link>
         </div>
       </section>
+
       <section className="max-w-7xl mx-auto px-4 sm:px-6 py-16">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {features.map(({ icon: Icon, title, desc }) => (

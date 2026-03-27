@@ -20,6 +20,13 @@ export async function POST(req: NextRequest) {
 
     const hashedPassword = await bcrypt.hash(validated.password, 12);
 
+    // Resolve referral
+    let referrerId: string | undefined;
+    if (body.referralCode) {
+      const referrer = await prisma.user.findUnique({ where: { referralCode: body.referralCode }, select: { id: true } });
+      if (referrer) referrerId = referrer.id;
+    }
+
     const user = await prisma.user.create({
       data: {
         name: validated.name,
@@ -27,6 +34,7 @@ export async function POST(req: NextRequest) {
         password: hashedPassword,
         role: 'CREATOR',
         username: validated.email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, ''),
+        ...(referrerId ? { referredById: referrerId } : {}),
       },
     });
 

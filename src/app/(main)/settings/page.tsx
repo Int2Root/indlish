@@ -4,13 +4,20 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCurrentUser } from '@/hooks/use-session';
 import { toast } from 'sonner';
-import { Save, User } from 'lucide-react';
+import { Save, User, IndianRupee, Wifi, WifiOff, Gift } from 'lucide-react';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import { useLowDataMode } from '@/hooks/use-low-data-mode';
+import Link from 'next/link';
 
 export default function SettingsPage() {
   const { user, isAuthenticated, isLoading: authLoading } = useCurrentUser();
   const router = useRouter();
-  const [profile, setProfile] = useState({ name: '', username: '', bio: '', image: '', socialLinks: { twitter: '', github: '', website: '', linkedin: '' } });
+  const { lowDataMode, toggle: toggleLowData } = useLowDataMode();
+  const [profile, setProfile] = useState({
+    name: '', username: '', bio: '', image: '',
+    upiId: '',
+    socialLinks: { twitter: '', github: '', website: '', linkedin: '' },
+  });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -25,6 +32,7 @@ export default function SettingsPage() {
             username: u.username || '',
             bio: u.bio || '',
             image: u.image || '',
+            upiId: u.upiId || '',
             socialLinks: u.socialLinks || { twitter: '', github: '', website: '', linkedin: '' },
           });
         }
@@ -48,7 +56,8 @@ export default function SettingsPage() {
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8">
       <h1 className="text-2xl font-bold mb-8">Settings</h1>
 
-      <div className="card space-y-6">
+      {/* Profile */}
+      <div className="card space-y-6 mb-6">
         <div className="flex items-center gap-4">
           {profile.image ? <img src={profile.image} alt="" className="w-16 h-16 rounded-full" /> : <div className="w-16 h-16 rounded-full bg-brand-500 flex items-center justify-center text-2xl font-bold">{profile.name?.[0] || <User size={24} />}</div>}
           <div>
@@ -89,6 +98,59 @@ export default function SettingsPage() {
         <button onClick={handleSave} disabled={saving} className="btn-primary flex items-center gap-2">
           <Save size={16} />{saving ? 'Saving...' : 'Save Changes'}
         </button>
+      </div>
+
+      {/* UPI / Monetization */}
+      <div className="card mb-6">
+        <h2 className="font-semibold mb-1 flex items-center gap-2"><IndianRupee size={16} className="text-brand-400" />UPI for Tips</h2>
+        <p className="text-text-secondary text-sm mb-4">Add your UPI ID so readers can tip you directly. Paytm, PhonePe, GPay — sab chalega!</p>
+        <div>
+          <label className="block text-sm font-medium text-text-secondary mb-1">UPI ID</label>
+          <input
+            type="text"
+            value={profile.upiId}
+            onChange={(e) => setProfile({ ...profile, upiId: e.target.value })}
+            className="input-field w-full"
+            placeholder="yourname@upi or 9999999999@paytm"
+          />
+          <p className="text-text-muted text-xs mt-1.5">Format: name@bank or phone@paytm / phone@ybl</p>
+        </div>
+        <button onClick={handleSave} disabled={saving} className="btn-primary mt-4 flex items-center gap-2">
+          <Save size={16} />{saving ? 'Saving...' : 'Save UPI ID'}
+        </button>
+      </div>
+
+      {/* Low Data Mode */}
+      <div className="card mb-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-start gap-3">
+            {lowDataMode ? <WifiOff className="text-yellow-400 shrink-0 mt-0.5" size={18} /> : <Wifi className="text-brand-400 shrink-0 mt-0.5" size={18} />}
+            <div>
+              <h2 className="font-semibold">Low Data Mode</h2>
+              <p className="text-text-secondary text-sm mt-0.5">
+                {lowDataMode ? 'Saving data — images lazy-loaded, animations reduced.' : 'Full quality mode. Toggle to save data on slow connections.'}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={toggleLowData}
+            className={`relative w-12 h-6 rounded-full transition-colors ${lowDataMode ? 'bg-yellow-500' : 'bg-brand-500'}`}
+            aria-label="Toggle low data mode"
+          >
+            <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${lowDataMode ? 'translate-x-7' : 'translate-x-1'}`} />
+          </button>
+        </div>
+      </div>
+
+      {/* Referral */}
+      <div className="card bg-gradient-to-r from-brand-500/10 to-transparent border-brand-500/20">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="font-semibold flex items-center gap-2"><Gift size={15} className="text-brand-400" />Invite Friends</h3>
+            <p className="text-text-secondary text-sm mt-1">Share your referral link. Earn Pro for every friend who joins!</p>
+          </div>
+          <Link href="/referral" className="btn-primary text-sm">Invite</Link>
+        </div>
       </div>
     </div>
   );

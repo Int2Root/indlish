@@ -462,3 +462,17 @@
   margin-right: 2px;
   border-radius: 0 !important;
 }
+/* Low Data Mode */
+html.low-data img:not([loading]) {
+  content-visibility: auto;
+}
+html.low-data * {
+  animation-duration: 0.01ms !important;
+  transition-duration: 0.01ms !important;
+}
+html.low-data .low-data\:hidden {
+  display: none !important;
+}
+html.low-data .low-data\:flex {
+  display: flex !important;
+}

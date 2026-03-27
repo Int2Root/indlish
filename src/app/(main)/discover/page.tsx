@@ -19,7 +19,8 @@ export default function DiscoverPage() {
 function DiscoverContent() {
   const searchParams = useSearchParams();
   const tagFilter = searchParams.get('tag');
-  const [query, setQuery] = useState('');
+  const qParam = searchParams.get('q') || '';
+  const [query, setQuery] = useState(qParam);
   const [results, setResults] = useState<any>({});
   const [trending, setTrending] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);

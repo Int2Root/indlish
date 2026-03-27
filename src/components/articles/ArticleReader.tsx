@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import TiptapEditor from '@/components/editor/TiptapEditor';
 import { Share2, Copy, Check } from 'lucide-react';
+import UpiTipButton from './UpiTipButton';
 
 function XBrandIcon() {
   return (
@@ -37,6 +38,7 @@ export interface ArticleReaderData {
     name: string | null;
     username: string | null;
     image?: string | null;
+    upiId?: string | null;
   };
   tags: Array<{ tag: { id: string; name: string; slug: string } }>;
   _count: { likes: number };
@@ -114,6 +116,24 @@ export default function ArticleReader({ article }: { article: ArticleReaderData 
               #{tag.name}
             </Link>
           ))}
+        </div>
+      )}
+
+      {/* UPI Tip */}
+      {article.author?.upiId && (
+        <div className="mt-8 pt-6 border-t border-neutral-800">
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <div>
+              <p className="font-medium text-sm">Like this article?</p>
+              <p className="text-text-muted text-xs mt-0.5">Support {article.author.name?.split(' ')[0]} directly with a UPI tip 🙏</p>
+            </div>
+            <UpiTipButton
+              authorName={article.author.name || 'Creator'}
+              authorUpiId={article.author.upiId}
+              authorId={article.author.id}
+              articleId={article.id}
+            />
+          </div>
         </div>
       )}
 

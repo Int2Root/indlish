@@ -10,7 +10,7 @@ export async function GET() {
       where: { id: session.user.id },
       select: {
         id: true, name: true, email: true, username: true, image: true,
-        bio: true, role: true, plan: true, socialLinks: true, createdAt: true,
+        bio: true, role: true, plan: true, socialLinks: true, upiId: true, createdAt: true,
         _count: { select: { articles: true, followers: true, following: true } },
       },
     });

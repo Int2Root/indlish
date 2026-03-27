@@ -49,7 +49,7 @@ export default async function ArticlePage({ params }: Props) {
   const article = await prisma.article.findUnique({
     where: { slug: params.slug, status: 'PUBLISHED' },
     include: {
-      author: { select: { id: true, name: true, username: true, image: true } },
+      author: { select: { id: true, name: true, username: true, image: true, upiId: true } },
       tags: { include: { tag: true } },
       _count: { select: { likes: true } },
     },
