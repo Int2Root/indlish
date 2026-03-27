@@ -60,62 +60,30 @@ export const authOptions: NextAuthOptions = {
     },
   },
   callbacks: {
-    async signIn({ user, account, profile }) {
+    async signIn({ account, profile }) {
+      // Safety net: clean up any mislinked Google accounts from previous bugs.
+      // If an Account record for this Google providerAccountId is linked to a
+      // user that doesn't match the Google email, delete it so that
+      // callbackHandler + allowDangerousEmailAccountLinking can re-link correctly.
       if (account?.provider === 'google' && profile?.email) {
         try {
-          // Find the user that SHOULD own this Google account (by email)
           const correctUser = await prisma.user.findUnique({
             where: { email: profile.email },
           });
-
           if (correctUser) {
-            // Check if the correct Account link already exists
-            const correctLink = await prisma.account.findFirst({
+            const deleted = await prisma.account.deleteMany({
               where: {
                 provider: 'google',
                 providerAccountId: account.providerAccountId,
-                userId: correctUser.id,
+                userId: { not: correctUser.id },
               },
             });
-
-            if (!correctLink) {
-              // Account is missing or linked to wrong user.
-              // Delete ALL Google accounts with this providerAccountId
-              // (could be linked to an orphan user from a previous bug)
-              await prisma.account.deleteMany({
-                where: {
-                  provider: 'google',
-                  providerAccountId: account.providerAccountId,
-                },
-              });
-              // Also delete any stale Google accounts for the correct user
-              await prisma.account.deleteMany({
-                where: {
-                  userId: correctUser.id,
-                  provider: 'google',
-                },
-              });
-              // Create the correct link so callbackHandler finds it
-              await prisma.account.create({
-                data: {
-                  userId: correctUser.id,
-                  type: account.type,
-                  provider: account.provider,
-                  providerAccountId: account.providerAccountId,
-                  refresh_token: account.refresh_token ?? undefined,
-                  access_token: account.access_token ?? undefined,
-                  expires_at: account.expires_at ?? undefined,
-                  token_type: account.token_type ?? undefined,
-                  scope: account.scope ?? undefined,
-                  id_token: account.id_token ?? undefined,
-                  session_state: account.session_state ?? undefined,
-                },
-              });
-              console.log('[AUTH] Fixed Google account link for user', correctUser.id);
+            if (deleted.count > 0) {
+              console.log('[AUTH] Cleaned up', deleted.count, 'mislinked Google account(s)');
             }
           }
         } catch (err: any) {
-          console.error('[AUTH] Error in signIn callback:', err.message);
+          console.error('[AUTH] signIn cleanup error:', err.message);
         }
       }
       return true;
@@ -145,4 +113,3 @@ export const authOptions: NextAuthOptions = {
     },
   },
 };
-
