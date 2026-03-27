@@ -13,9 +13,9 @@ export async function GET(req: NextRequest) {
     const authorId = searchParams.get('authorId');
     const status = searchParams.get('status') || 'PUBLISHED';
 
-    const where: any = { status };
+    const where: any = { status, author: { username: { not: 'test' } } };
     if (tag) where.tags = { some: { tag: { slug: tag } } };
-    if (authorId) where.authorId = authorId;
+    if (authorId) { where.authorId = authorId; delete where.author; }
 
     const [articles, total] = await Promise.all([
       prisma.article.findMany({

@@ -6,7 +6,7 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           <div>
-            <h3 className="text-brand-400 font-bold text-lg mb-4">indlish</h3>
+            <Link href="/" className="text-brand-400 font-bold text-lg mb-4 inline-block">indlish</Link>
             <p className="text-text-muted text-sm">India-native creator platform. Write, organize, curate — all in one place.</p>
             <p className="text-text-muted text-xs mt-2">By Int2Root</p>
           </div>
@@ -16,6 +16,7 @@ export default function Footer() {
               <Link href="/discover" className="block text-text-muted text-sm hover:text-brand-400">Discover</Link>
               <Link href="/write" className="block text-text-muted text-sm hover:text-brand-400">Write</Link>
               <Link href="/curate" className="block text-text-muted text-sm hover:text-brand-400">Curate</Link>
+              <Link href="/feed" className="block text-text-muted text-sm hover:text-brand-400">Feed</Link>
             </div>
           </div>
           <div>

@@ -18,6 +18,7 @@ export async function GET(req: NextRequest) {
       results.articles = await prisma.article.findMany({
         where: {
           status: 'PUBLISHED',
+          author: { username: { not: 'test' } },
           OR: [
             { title: { contains: q, mode: 'insensitive' } },
             { excerpt: { contains: q, mode: 'insensitive' } },
