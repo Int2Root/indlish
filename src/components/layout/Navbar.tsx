@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useCurrentUser } from '@/hooks/use-session';
 import { signOut } from 'next-auth/react';
 import { useState, useRef, useEffect } from 'react';
-import { PenLine, BookOpen, LayoutGrid, Search, Menu, X, LogOut, Settings, BarChart3, User, Trophy, Gift } from 'lucide-react';
+import { PenLine, BookOpen, LayoutGrid, Search, Menu, X, LogOut, Settings, BarChart3, User, Trophy, Gift, HeadphonesIcon, Zap, Receipt } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function Navbar() {
@@ -97,6 +97,10 @@ export default function Navbar() {
                     <Link href="/referral" className="flex items-center gap-2 px-4 py-2 text-sm text-text-secondary hover:bg-surface-lighter" onClick={() => setProfileOpen(false)}><Gift size={14} />Invite Friends</Link>
                     <Link href="/settings" className="flex items-center gap-2 px-4 py-2 text-sm text-text-secondary hover:bg-surface-lighter" onClick={() => setProfileOpen(false)}><Settings size={14} />Settings</Link>
                     <hr className="my-1 border-neutral-700" />
+                    <Link href="/upgrade" className="flex items-center gap-2 px-4 py-2 text-sm text-text-secondary hover:bg-surface-lighter" onClick={() => setProfileOpen(false)}><Zap size={14} />Upgrade</Link>
+                    <Link href="/billing" className="flex items-center gap-2 px-4 py-2 text-sm text-text-secondary hover:bg-surface-lighter" onClick={() => setProfileOpen(false)}><Receipt size={14} />Billing</Link>
+                    <Link href="/support" className="flex items-center gap-2 px-4 py-2 text-sm text-text-secondary hover:bg-surface-lighter" onClick={() => setProfileOpen(false)}><HeadphonesIcon size={14} />Support</Link>
+                    <hr className="my-1 border-neutral-700" />
                     <button onClick={() => signOut()} className="flex items-center gap-2 px-4 py-2 text-sm text-red-400 hover:bg-surface-lighter w-full"><LogOut size={14} />Sign Out</button>
                   </div>
                 )}
@@ -143,6 +147,9 @@ export default function Navbar() {
               <Link href={`/profile/${user?.username || user?.id}`} className="flex items-center gap-2 px-3 py-3 rounded-lg text-sm text-text-secondary" onClick={() => setMobileOpen(false)}><User size={16} />Profile</Link>
               <Link href="/referral" className="flex items-center gap-2 px-3 py-3 rounded-lg text-sm text-text-secondary" onClick={() => setMobileOpen(false)}><Gift size={16} />Invite Friends</Link>
               <Link href="/settings" className="flex items-center gap-2 px-3 py-3 rounded-lg text-sm text-text-secondary" onClick={() => setMobileOpen(false)}><Settings size={16} />Settings</Link>
+              <Link href="/upgrade" className="flex items-center gap-2 px-3 py-3 rounded-lg text-sm text-text-secondary" onClick={() => setMobileOpen(false)}><Zap size={16} />Upgrade</Link>
+              <Link href="/billing" className="flex items-center gap-2 px-3 py-3 rounded-lg text-sm text-text-secondary" onClick={() => setMobileOpen(false)}><Receipt size={16} />Billing</Link>
+              <Link href="/support" className="flex items-center gap-2 px-3 py-3 rounded-lg text-sm text-text-secondary" onClick={() => setMobileOpen(false)}><HeadphonesIcon size={16} />Support</Link>
               <button onClick={() => { signOut(); setMobileOpen(false); }} className="flex items-center gap-2 px-3 py-3 rounded-lg text-sm text-red-400 w-full"><LogOut size={16} />Sign Out</button>
             </>
           ) : (
