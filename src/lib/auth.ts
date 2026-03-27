@@ -53,28 +53,50 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async signIn({ user, account, profile }) {
-      if (account?.provider === 'google' && profile?.email) {
-        const existingUser = await prisma.user.findUnique({
-          where: { email: profile.email },
-          include: { accounts: { where: { provider: 'google' } } },
-        });
+      console.log('[AUTH DEBUG] signIn callback called', {
+        provider: account?.provider,
+        email: profile?.email,
+        hasAccount: !!account,
+      });
 
-        if (existingUser && existingUser.accounts.length === 0) {
-          await prisma.account.create({
-            data: {
-              userId: existingUser.id,
-              type: account.type,
-              provider: account.provider,
-              providerAccountId: account.providerAccountId,
-              refresh_token: account.refresh_token,
-              access_token: account.access_token,
-              expires_at: account.expires_at,
-              token_type: account.token_type,
-              scope: account.scope,
-              id_token: account.id_token,
-              session_state: account.session_state,
-            },
+      if (account?.provider === 'google' && profile?.email) {
+        try {
+          const existingUser = await prisma.user.findUnique({
+            where: { email: profile.email },
+            include: { accounts: { where: { provider: 'google' } } },
           });
+
+          console.log('[AUTH DEBUG] existingUser lookup', {
+            found: !!existingUser,
+            userId: existingUser?.id,
+            googleAccountsCount: existingUser?.accounts?.length,
+          });
+
+          if (existingUser && existingUser.accounts.length === 0) {
+            console.log('[AUTH DEBUG] Creating account link for existing user');
+            const created = await prisma.account.create({
+              data: {
+                userId: existingUser.id,
+                type: account.type,
+                provider: account.provider,
+                providerAccountId: account.providerAccountId,
+                refresh_token: account.refresh_token ?? undefined,
+                access_token: account.access_token ?? undefined,
+                expires_at: account.expires_at ?? undefined,
+                token_type: account.token_type ?? undefined,
+                scope: account.scope ?? undefined,
+                id_token: account.id_token ?? undefined,
+                session_state: account.session_state ?? undefined,
+              },
+            });
+            console.log('[AUTH DEBUG] Account created successfully', { id: created.id });
+          } else if (existingUser) {
+            console.log('[AUTH DEBUG] Google account already linked, skipping');
+          } else {
+            console.log('[AUTH DEBUG] No existing user found for email, new user flow');
+          }
+        } catch (err: any) {
+          console.error('[AUTH DEBUG] Error in signIn callback:', err.message, err.stack);
         }
       }
       return true;
