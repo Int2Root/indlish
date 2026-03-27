@@ -51,10 +51,24 @@ export const authOptions: NextAuthOptions = {
       if (user.email) {
         const dbUser = await prisma.user.findUnique({
           where: { id: user.id },
-          select: { password: true },
+          select: { password: true, username: true },
         });
         if (!dbUser?.password) {
           sendWelcomeEmail(user.email, user.name).catch(console.error);
+        }
+        // Generate username for OAuth users who don't have one set
+        if (!dbUser?.username) {
+          const base = (
+            user.name
+              ? user.name.toLowerCase().replace(/[^a-z0-9]/g, '')
+              : user.email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '')
+          ).slice(0, 20) || 'user';
+          let username = base;
+          let suffix = 1;
+          while (await prisma.user.findUnique({ where: { username } })) {
+            username = `${base.slice(0, 17)}${suffix++}`;
+          }
+          await prisma.user.update({ where: { id: user.id }, data: { username } });
         }
       }
     },

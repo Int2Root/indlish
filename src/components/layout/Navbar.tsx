@@ -93,7 +93,7 @@ export default function Navbar() {
                 {profileOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-surface-light border border-neutral-700 rounded-lg shadow-xl py-1">
                     <Link href="/dashboard" className="flex items-center gap-2 px-4 py-2 text-sm text-text-secondary hover:bg-surface-lighter" onClick={() => setProfileOpen(false)}><BarChart3 size={14} />Dashboard</Link>
-                    <Link href={`/profile/${user?.username}`} className="flex items-center gap-2 px-4 py-2 text-sm text-text-secondary hover:bg-surface-lighter" onClick={() => setProfileOpen(false)}><User size={14} />Profile</Link>
+                    <Link href={`/profile/${user?.username || user?.id}`} className="flex items-center gap-2 px-4 py-2 text-sm text-text-secondary hover:bg-surface-lighter" onClick={() => setProfileOpen(false)}><User size={14} />Profile</Link>
                     <Link href="/referral" className="flex items-center gap-2 px-4 py-2 text-sm text-text-secondary hover:bg-surface-lighter" onClick={() => setProfileOpen(false)}><Gift size={14} />Invite Friends</Link>
                     <Link href="/settings" className="flex items-center gap-2 px-4 py-2 text-sm text-text-secondary hover:bg-surface-lighter" onClick={() => setProfileOpen(false)}><Settings size={14} />Settings</Link>
                     <hr className="my-1 border-neutral-700" />
@@ -140,7 +140,7 @@ export default function Navbar() {
             <>
               <hr className="my-2 border-neutral-800" />
               <Link href="/dashboard" className="flex items-center gap-2 px-3 py-3 rounded-lg text-sm text-text-secondary" onClick={() => setMobileOpen(false)}><BarChart3 size={16} />Dashboard</Link>
-              <Link href={`/profile/${user?.username}`} className="flex items-center gap-2 px-3 py-3 rounded-lg text-sm text-text-secondary" onClick={() => setMobileOpen(false)}><User size={16} />Profile</Link>
+              <Link href={`/profile/${user?.username || user?.id}`} className="flex items-center gap-2 px-3 py-3 rounded-lg text-sm text-text-secondary" onClick={() => setMobileOpen(false)}><User size={16} />Profile</Link>
               <Link href="/referral" className="flex items-center gap-2 px-3 py-3 rounded-lg text-sm text-text-secondary" onClick={() => setMobileOpen(false)}><Gift size={16} />Invite Friends</Link>
               <Link href="/settings" className="flex items-center gap-2 px-3 py-3 rounded-lg text-sm text-text-secondary" onClick={() => setMobileOpen(false)}><Settings size={16} />Settings</Link>
               <button onClick={() => { signOut(); setMobileOpen(false); }} className="flex items-center gap-2 px-3 py-3 rounded-lg text-sm text-red-400 w-full"><LogOut size={16} />Sign Out</button>
