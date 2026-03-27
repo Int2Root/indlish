@@ -72,16 +72,24 @@ export default function Navbar() {
         </div>
       </div>
       {mobileOpen && (
-        <div className="md:hidden border-t border-neutral-800 bg-surface px-4 pb-4">
+        <div className="md:hidden border-t border-neutral-800 bg-surface px-4 pb-4 pt-2">
           {navItems.map(({ href, label, icon: Icon }) => (
             <Link key={href} href={href} className={cn('flex items-center gap-2 px-3 py-3 rounded-lg text-sm', pathname === href ? 'text-brand-400' : 'text-text-secondary')} onClick={() => setMobileOpen(false)}>
               <Icon size={16} />{label}
             </Link>
           ))}
-          {!isAuthenticated && (
+          {isAuthenticated ? (
+            <>
+              <hr className="my-2 border-neutral-800" />
+              <Link href="/dashboard" className="flex items-center gap-2 px-3 py-3 rounded-lg text-sm text-text-secondary" onClick={() => setMobileOpen(false)}><BarChart3 size={16} />Dashboard</Link>
+              <Link href={`/profile/${user?.username}`} className="flex items-center gap-2 px-3 py-3 rounded-lg text-sm text-text-secondary" onClick={() => setMobileOpen(false)}><User size={16} />Profile</Link>
+              <Link href="/settings" className="flex items-center gap-2 px-3 py-3 rounded-lg text-sm text-text-secondary" onClick={() => setMobileOpen(false)}><Settings size={16} />Settings</Link>
+              <button onClick={() => { signOut(); setMobileOpen(false); }} className="flex items-center gap-2 px-3 py-3 rounded-lg text-sm text-red-400 w-full"><LogOut size={16} />Sign Out</button>
+            </>
+          ) : (
             <div className="flex gap-2 mt-3">
-              <Link href="/login" className="btn-ghost text-sm flex-1 text-center">Sign In</Link>
-              <Link href="/register" className="btn-primary text-sm flex-1 text-center">Get Started</Link>
+              <Link href="/login" className="btn-ghost text-sm flex-1 text-center" onClick={() => setMobileOpen(false)}>Sign In</Link>
+              <Link href="/register" className="btn-primary text-sm flex-1 text-center" onClick={() => setMobileOpen(false)}>Get Started</Link>
             </div>
           )}
         </div>

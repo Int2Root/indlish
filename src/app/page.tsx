@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { PenLine, BookOpen, LayoutGrid, Sparkles, IndianRupee } from 'lucide-react';
+import Footer from '@/components/layout/Footer';
 
 export default function HomePage() {
   const features = [
@@ -12,7 +13,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-surface">
       <nav className="flex items-center justify-between max-w-7xl mx-auto px-4 sm:px-6 py-4">
-        <span className="text-2xl font-bold text-brand-400">indlish</span>
+        <Link href="/" className="text-2xl font-bold text-brand-400">indlish</Link>
         <div className="flex items-center gap-3">
           <Link href="/login" className="btn-ghost text-sm">Sign In</Link>
           <Link href="/register" className="btn-primary text-sm">Start Writing — It's Free</Link>
@@ -80,10 +81,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <footer className="border-t border-neutral-800 py-8 text-center text-text-muted text-sm">
-        <p>Built with ❤️ by <a href="mailto:hello@int2root.com" className="text-brand-400">Int2Root</a></p>
-        <p className="mt-1">© {new Date().getFullYear()} Int2Root. All rights reserved.</p>
-      </footer>
+      <Footer />
     </div>
   );
 }

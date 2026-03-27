@@ -22,7 +22,7 @@ export default function ArticleCard({ article }: { article: ArticleWithAuthor })
         <span className="text-text-muted text-xs">·</span>
         <span className="text-text-muted text-xs">{formatDate(article.publishedAt || article.createdAt)}</span>
       </div>
-      <Link href={`/write/${article.slug}`}>
+      <Link href={`/articles/${article.slug}`}>
         <h2 className="text-xl font-semibold mb-2 group-hover:text-brand-400 transition-colors line-clamp-2">
           {article.title}
         </h2>

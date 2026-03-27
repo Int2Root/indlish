@@ -6,7 +6,7 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           <div>
-            <h3 className="text-brand-400 font-bold text-lg mb-4">indlish</h3>
+            <Link href="/" className="text-brand-400 font-bold text-lg mb-4 inline-block">indlish</Link>
             <p className="text-text-muted text-sm">India-native creator platform. Write, organize, curate — all in one place.</p>
             <p className="text-text-muted text-xs mt-2">By Int2Root</p>
           </div>
@@ -16,14 +16,15 @@ export default function Footer() {
               <Link href="/discover" className="block text-text-muted text-sm hover:text-brand-400">Discover</Link>
               <Link href="/write" className="block text-text-muted text-sm hover:text-brand-400">Write</Link>
               <Link href="/curate" className="block text-text-muted text-sm hover:text-brand-400">Curate</Link>
+              <Link href="/feed" className="block text-text-muted text-sm hover:text-brand-400">Feed</Link>
             </div>
           </div>
           <div>
             <h4 className="font-medium text-text-primary mb-3 text-sm">Pricing</h4>
             <div className="space-y-2">
-              <p className="text-text-muted text-sm">Free — Get started</p>
-              <p className="text-text-muted text-sm">Pro ₹99/mo</p>
-              <p className="text-text-muted text-sm">Pro+ ₹199/mo</p>
+              <Link href="/pricing" className="block text-text-muted text-sm hover:text-brand-400">Free — Get started</Link>
+              <Link href="/pricing" className="block text-text-muted text-sm hover:text-brand-400">Pro ₹99/mo</Link>
+              <Link href="/pricing" className="block text-text-muted text-sm hover:text-brand-400">Pro+ ₹199/mo</Link>
             </div>
           </div>
           <div>
@@ -34,8 +35,12 @@ export default function Footer() {
             </div>
           </div>
         </div>
-        <div className="border-t border-neutral-800 mt-8 pt-8 text-center text-text-muted text-xs">
-          © {new Date().getFullYear()} Int2Root. All rights reserved.
+        <div className="border-t border-neutral-800 mt-8 pt-8 flex flex-col sm:flex-row justify-between items-center gap-3 text-text-muted text-xs">
+          <span>© {new Date().getFullYear()} Int2Root. All rights reserved.</span>
+          <div className="flex items-center gap-4">
+            <Link href="/terms" className="hover:text-brand-400 transition-colors">Terms</Link>
+            <Link href="/privacy" className="hover:text-brand-400 transition-colors">Privacy</Link>
+          </div>
         </div>
       </div>
     </footer>
