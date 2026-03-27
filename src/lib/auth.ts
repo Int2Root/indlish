@@ -32,7 +32,12 @@ export const authOptions: NextAuthOptions = {
         const isValid = await bcrypt.compare(credentials.password, user.password);
         if (!isValid) return null;
 
-        return { id: user.id, email: user.email, name: user.name, image: user.image };
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          image: user.image,
+        };
       },
     }),
   ],
@@ -44,7 +49,10 @@ export const authOptions: NextAuthOptions = {
   events: {
     async createUser({ user }) {
       if (user.email) {
-        const dbUser = await prisma.user.findUnique({ where: { id: user.id }, select: { password: true } });
+        const dbUser = await prisma.user.findUnique({
+          where: { id: user.id },
+          select: { password: true },
+        });
         if (!dbUser?.password) {
           sendWelcomeEmail(user.email, user.name).catch(console.error);
         }
@@ -52,40 +60,51 @@ export const authOptions: NextAuthOptions = {
     },
   },
   callbacks: {
-    async signIn({ account, profile }) {
+    async signIn({ user, account, profile }) {
+      // For Google sign-in: clean up any stale/mismatched Google account
+      // records created by previous buggy code, so the callbackHandler's
+      // allowDangerousEmailAccountLinking flow works correctly.
       if (account?.provider === 'google' && profile?.email) {
         try {
           const existingUser = await prisma.user.findUnique({
             where: { email: profile.email },
-            include: { accounts: { where: { provider: 'google' } } },
           });
 
-          if (existingUser && existingUser.accounts.length === 0) {
-            await prisma.account.create({
-              data: {
-                userId: existingUser.id,
-                type: account.type,
-                provider: account.provider,
-                providerAccountId: account.providerAccountId,
-                refresh_token: account.refresh_token ?? undefined,
-                access_token: account.access_token ?? undefined,
-                expires_at: account.expires_at ?? undefined,
-                token_type: account.token_type ?? undefined,
-                scope: account.scope ?? undefined,
-                id_token: account.id_token ?? undefined,
-                session_state: account.session_state ?? undefined,
+          if (existingUser) {
+            const matchingAccount = await prisma.account.findUnique({
+              where: {
+                provider_providerAccountId: {
+                  provider: 'google',
+                  providerAccountId: account.providerAccountId,
+                },
               },
             });
+
+            if (!matchingAccount) {
+              // Delete stale Google account records for this user
+              // so callbackHandler can create a fresh one via linkAccount
+              const deleted = await prisma.account.deleteMany({
+                where: {
+                  userId: existingUser.id,
+                  provider: 'google',
+                },
+              });
+              if (deleted.count > 0) {
+                console.log('[AUTH] Cleaned up', deleted.count, 'stale Google account(s) for user', existingUser.id);
+              }
+            }
           }
         } catch (err: any) {
-          console.error('[auth] Error linking Google account:', err.message);
+          console.error('[AUTH] Error in signIn cleanup:', err.message);
         }
       }
       return true;
     },
     async jwt({ token, user }) {
       if (user) {
-        const dbUser = await prisma.user.findUnique({ where: { id: user.id } });
+        const dbUser = await prisma.user.findUnique({
+          where: { id: user.id },
+        });
         if (dbUser) {
           token.id = dbUser.id;
           token.role = dbUser.role;
