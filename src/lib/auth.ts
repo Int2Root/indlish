@@ -11,6 +11,7 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      allowDangerousEmailAccountLinking: true,
     }),
     CredentialsProvider({
       name: 'credentials',
@@ -39,6 +40,12 @@ export const authOptions: NextAuthOptions = {
     signIn: '/login',
     newUser: '/settings',
   },  callbacks: {
+    async signIn({ account }) {
+      if (account?.provider === "google") {
+        return true;
+      }
+      return true;
+    },
     async jwt({ token, user }) {
       if (user) {
         const dbUser = await prisma.user.findUnique({ where: { id: user.id } });
