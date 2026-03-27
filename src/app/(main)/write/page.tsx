@@ -50,14 +50,14 @@ export default function WritePage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-start justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold">Your Articles</h1>
           <p className="text-text-muted text-sm mt-1">
             {published.length} published · {drafts.length} draft{drafts.length !== 1 ? 's' : ''}
           </p>
         </div>
-        <button onClick={createArticle} className="btn-primary flex items-center gap-2">
+        <button onClick={createArticle} className="btn-primary flex items-center gap-2 shrink-0">
           <Plus size={16} /> New Article
         </button>
       </div>
@@ -111,10 +111,10 @@ export default function WritePage() {
                   <p className="text-text-muted text-sm mt-0.5 truncate">{article.excerpt}</p>
                 )}
               </div>
-              <div className="flex items-center gap-4 text-text-muted text-sm shrink-0">
+              <div className="flex items-center gap-2 sm:gap-4 text-text-muted text-sm shrink-0">
                 <span className="flex items-center gap-1"><Eye size={14} />{article.views}</span>
                 <span className="flex items-center gap-1"><Heart size={14} />{article._count?.likes || 0}</span>
-                <span className="flex items-center gap-1"><MessageCircle size={14} />{article._count?.comments || 0}</span>
+                <span className="hidden sm:flex items-center gap-1"><MessageCircle size={14} />{article._count?.comments || 0}</span>
               </div>
             </Link>
           ))}

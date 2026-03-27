@@ -57,7 +57,7 @@ export default function ArticleCard({ article }: { article: ArticleWithAuthor })
       )}
 
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4 text-text-muted text-sm">
+        <div className="flex items-center gap-2 sm:gap-4 text-text-muted text-sm">
           <span className="flex items-center gap-1"><Clock size={14} />{article.readingTime} min</span>
           <span className="flex items-center gap-1"><Eye size={14} />{formatNumber(article.views)}</span>
           <span className="flex items-center gap-1"><Heart size={14} />{formatNumber(article._count.likes)}</span>

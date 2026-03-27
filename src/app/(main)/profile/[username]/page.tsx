@@ -74,7 +74,7 @@ export default function ProfilePage() {
             <h1 className="text-2xl font-bold">{profile.name}</h1>
             <p className="text-text-muted">@{profile.username}</p>
             {profile.bio && <p className="text-text-secondary mt-2 text-sm">{profile.bio}</p>}
-            <div className="flex items-center gap-4 mt-3 text-text-muted text-sm">
+            <div className="flex flex-wrap items-center gap-3 mt-3 text-text-muted text-sm">
               <span className="flex items-center gap-1.5">
                 <FileText size={14} />{formatNumber(profile._count?.articles || 0)} articles
               </span>
