@@ -6,6 +6,20 @@ import bcrypt from 'bcryptjs';
 import prisma from './prisma';
 import { sendWelcomeEmail } from './email';
 
+async function generateUniqueUsername(name: string | null | undefined, email: string): Promise<string> {
+  const base = (
+    name
+      ? name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-').replace(/^-+|-+$/g, '')
+      : email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '')
+  ).slice(0, 20) || 'user';
+  let username = base;
+  let suffix = 1;
+  while (await prisma.user.findUnique({ where: { username } })) {
+    username = `${base.slice(0, 17)}${suffix++}`;
+  }
+  return username;
+}
+
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
@@ -58,16 +72,7 @@ export const authOptions: NextAuthOptions = {
         }
         // Generate username for OAuth users who don't have one set
         if (!dbUser?.username) {
-          const base = (
-            user.name
-              ? user.name.toLowerCase().replace(/[^a-z0-9]/g, '')
-              : user.email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '')
-          ).slice(0, 20) || 'user';
-          let username = base;
-          let suffix = 1;
-          while (await prisma.user.findUnique({ where: { username } })) {
-            username = `${base.slice(0, 17)}${suffix++}`;
-          }
+          const username = await generateUniqueUsername(user.name, user.email);
           await prisma.user.update({ where: { id: user.id }, data: { username } });
         }
       }
@@ -94,6 +99,12 @@ export const authOptions: NextAuthOptions = {
             });
             if (deleted.count > 0) {
               console.log('[AUTH] Cleaned up', deleted.count, 'mislinked Google account(s)');
+            }
+            // Generate username for existing users who somehow ended up without one
+            if (!correctUser.username) {
+              const username = await generateUniqueUsername((profile as any).name, profile.email);
+              await prisma.user.update({ where: { id: correctUser.id }, data: { username } });
+              console.log('[AUTH] Generated username for existing user:', username);
             }
           }
         } catch (err: any) {

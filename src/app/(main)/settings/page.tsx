@@ -27,9 +27,14 @@ export default function SettingsPage() {
       fetch('/api/users').then(r => r.json()).then(d => {
         if (d.success) {
           const u = d.data;
+          // Auto-suggest a username if the user doesn't have one yet
+          let suggestedUsername = u.username || '';
+          if (!suggestedUsername && u.name) {
+            suggestedUsername = u.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-').replace(/^-+|-+$/g, '').slice(0, 20);
+          }
           setProfile({
             name: u.name || '',
-            username: u.username || '',
+            username: suggestedUsername,
             bio: u.bio || '',
             image: u.image || '',
             upiId: u.upiId || '',
@@ -80,8 +85,17 @@ export default function SettingsPage() {
             <textarea value={profile.bio} onChange={(e) => setProfile({ ...profile, bio: e.target.value })} className="input-field w-full" rows={3} placeholder="Tell us about yourself..." maxLength={300} />
           </div>
           <div>
-            <label className="block text-sm font-medium text-text-secondary mb-1">Profile Image URL</label>
-            <input type="url" value={profile.image} onChange={(e) => setProfile({ ...profile, image: e.target.value })} className="input-field w-full" placeholder="https://..." />
+            <label className="block text-sm font-medium text-text-secondary mb-1">Profile Photo</label>
+            <div className="flex items-center gap-3">
+              {profile.image ? (
+                <img src={profile.image} alt="Avatar preview" className="w-12 h-12 rounded-full object-cover shrink-0 border border-neutral-700" />
+              ) : (
+                <div className="w-12 h-12 rounded-full bg-brand-500 flex items-center justify-center text-lg font-bold shrink-0">
+                  {profile.name?.[0] || <User size={18} />}
+                </div>
+              )}
+              <input type="url" value={profile.image} onChange={(e) => setProfile({ ...profile, image: e.target.value })} className="input-field flex-1" placeholder="Paste image URL (https://...)" />
+            </div>
           </div>
 
           <div className="border-t border-neutral-700 pt-4">
