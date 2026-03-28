@@ -9,7 +9,7 @@ import InstallPrompt from '@/components/layout/InstallPrompt';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: { default: 'indlish — Write. Organize. Curate.', template: '%s | indlish' },
+  title: { default: 'indlish — Write. Organize. Curate.', template: '%s — indlish' },
   description: 'India-native creator platform. Write articles, organize notes, curate boards. By Int2Root.',
   keywords: ['writing', 'blogging', 'notes', 'curation', 'India', 'creator platform'],
   authors: [{ name: 'Int2Root', url: 'https://int2root.com' }],

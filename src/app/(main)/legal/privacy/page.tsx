@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy — indlish',
+  title: 'Privacy Policy',
   description: 'Privacy Policy for indlish, the India-native creator platform by Int2Root.',
 };
 

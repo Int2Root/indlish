@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import { Check } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Pricing — indlish',
+  title: 'Pricing',
   description: 'Simple, honest pricing for Indian creators. Start free, upgrade when you grow.',
   openGraph: {
     title: 'Pricing — indlish',

@@ -12,7 +12,7 @@ export async function generateMetadata({
       next: { revalidate: 60 },
     });
     const data = await res.json();
-    if (!data.success) return { title: 'Article | indlish' };
+    if (!data.success) return { title: 'Article' };
     const a = data.data;
     const desc = a.excerpt && !a.excerpt.startsWith('{') ? a.excerpt : `Read "${a.title}" on indlish`;
     return {
@@ -33,7 +33,7 @@ export async function generateMetadata({
       },
     };
   } catch {
-    return { title: 'Article | indlish' };
+    return { title: 'Article' };
   }
 }
 
