@@ -3,8 +3,15 @@
 import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 
-export default function LoginPage() {
+function LoginContent() {
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
+  // Only allow relative paths to prevent open-redirect
+  const safeCallback = callbackUrl.startsWith('/') ? callbackUrl : '/dashboard';
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -37,7 +44,7 @@ export default function LoginPage() {
       setError('Invalid email or password');
       setLoading(false);
     } else {
-      window.location.href = '/dashboard';
+      window.location.href = safeCallback;
     }
   };
 
@@ -51,7 +58,7 @@ export default function LoginPage() {
 
         <div className="card">
           <button
-            onClick={() => signIn('google', { callbackUrl: '/dashboard' })}
+            onClick={() => signIn('google', { callbackUrl: safeCallback })}
             className="w-full btn-secondary flex items-center justify-center gap-3 mb-6"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -119,5 +126,13 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginContent />
+    </Suspense>
   );
 }

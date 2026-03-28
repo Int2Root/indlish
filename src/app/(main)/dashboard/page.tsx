@@ -221,7 +221,7 @@ export default function DashboardPage() {
                 Unlock unlimited articles, UPI tipping, and advanced analytics.
               </p>
             </div>
-            <Link href="/pricing" className="btn-primary text-sm shrink-0">Upgrade</Link>
+            <Link href="/upgrade" className="btn-primary text-sm shrink-0">Upgrade</Link>
           </div>
         </div>
       )}
