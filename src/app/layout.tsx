@@ -10,24 +10,28 @@ const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: { default: 'indlish — Write. Organize. Curate.', template: '%s — indlish' },
-  description: 'India-native creator platform. Write articles, organize notes, curate boards. By Int2Root.',
-  keywords: ['writing', 'blogging', 'notes', 'curation', 'India', 'creator platform'],
+  description: 'India ka apna creator platform. Write articles, organize notes, curate boards & earn UPI tips. Medium + Notion + Pinterest, built for India.',
+  keywords: ['writing', 'blogging', 'notes', 'curation', 'India', 'creator platform', 'UPI tips', 'Hindi', 'indlish'],
   authors: [{ name: 'Int2Root', url: 'https://int2root.com' }],
+  metadataBase: new URL('https://indlish.com'),
+  alternates: { canonical: 'https://indlish.com' },
   manifest: '/manifest.json',
   appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'indlish' },
   openGraph: {
     title: 'indlish — Write. Organize. Curate.',
-    description: 'India-native creator platform by Int2Root.',
+    description: 'India ka apna creator platform. Write, organize & curate — earn UPI tips from readers.',
     url: 'https://indlish.com',
     siteName: 'indlish',
     type: 'website',
-    images: [{ url: 'https://indlish.com/og-default.png', width: 1200, height: 630 }],
+    locale: 'en_IN',
+    images: [{ url: '/api/og', width: 1200, height: 630, alt: 'indlish — Write. Organize. Curate.' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'indlish — Write. Organize. Curate.',
-    description: 'India-native creator platform by Int2Root.',
-    images: ['https://indlish.com/og-default.png'],
+    description: 'India ka apna creator platform. Write, organize & curate — earn UPI tips from readers.',
+    images: ['/api/og'],
+    site: '@indlish',
   },
 };
 

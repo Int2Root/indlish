@@ -15,8 +15,30 @@ export default function HomePage() {
     { icon: IndianRupee, title: 'Earn', desc: 'Receive UPI tips from readers. Built-in earnings dashboard. Your content, your income.' },
   ];
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'indlish',
+    url: 'https://indlish.com',
+    description: 'India ka apna creator platform. Write articles, organize notes, curate boards & earn UPI tips.',
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: 'https://indlish.com/discover?q={search_term_string}',
+      'query-input': 'required name=search_term_string',
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'Int2Root',
+      url: 'https://int2root.com',
+    },
+  };
+
   return (
     <div className="min-h-screen bg-surface flex flex-col">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <nav className="sticky top-0 z-50 bg-surface/80 backdrop-blur-xl border-b border-neutral-800">
         <div className="flex items-center justify-between max-w-7xl mx-auto px-4 sm:px-6 h-16">
           <Link href="/" className="text-2xl font-bold text-brand-400">indlish</Link>
