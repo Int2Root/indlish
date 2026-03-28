@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Discover',
-  description: 'Explore trending articles, creators, and curated boards from India's best writers on indlish.',
+  description: "Explore trending articles, creators, and curated boards from India's best writers on indlish.",
   alternates: { canonical: 'https://indlish.com/discover' },
   openGraph: {
     title: 'Discover — indlish',
