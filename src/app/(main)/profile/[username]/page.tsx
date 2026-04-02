@@ -28,10 +28,10 @@ export default function ProfilePage() {
       if (foundUser) {
         setProfile(foundUser);
         const [articlesRes, boardsRes] = await Promise.all([
-          fetch(`/api/articles?authorId=${foundUser.id}`).then((r) => r.json()),
+          fetch(`/api/articles?authorId=${foundUser.id}&status=PUBLISHED`).then((r) => r.json()),
           fetch(`/api/boards?userId=${foundUser.id}`).then((r) => r.json()),
         ]);
-        setArticles(articlesRes.data?.articles || []);
+        setArticles((articlesRes.data?.articles || []).filter((a: any) => a.status === 'PUBLISHED'));
         setBoards(boardsRes.data?.boards || []);
       }
       setLoading(false);
