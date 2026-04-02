@@ -16,9 +16,7 @@ export async function GET(req: NextRequest) {
     const session = await getAuthSession();
     const where: any = {};
 
-    if (status) {
-      where.status = status;
-    } else if (!authorId) {
+    if (!authorId) {
       // Public feeds default to PUBLISHED only
       where.status = 'PUBLISHED';
       where.author = { username: { not: 'test' } };
