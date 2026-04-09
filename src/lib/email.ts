@@ -252,6 +252,35 @@ export async function sendWeeklyDigest({
   });
 }
 
+export async function sendPasswordResetEmail({
+  email,
+  resetUrl,
+}: {
+  email: string;
+  resetUrl: string;
+}): Promise<void> {
+  const html = emailLayout(`
+    <h1 style="margin:0 0 6px;font-size:26px;font-weight:800;color:#f0f0f0;line-height:1.2;">
+      Reset your password
+    </h1>
+    <p style="margin:0 0 20px;font-size:15px;color:#888;">Click the button below to set a new password.</p>
+    <p style="margin:0 0 16px;font-size:15px;color:#ccc;line-height:1.7;">
+      This link expires in <strong style="color:#f0f0f0;">1 hour</strong>. If you didn't request a password reset, you can ignore this email.
+    </p>
+    ${ctaButton(resetUrl, 'Reset Password')}
+    <p style="margin:24px 0 0;font-size:13px;color:#555;line-height:1.6;">
+      Or copy and paste this URL into your browser:<br/>
+      <span style="color:#dd6b20;word-break:break-all;">${resetUrl}</span>
+    </p>
+  `);
+
+  await sendEmailHTML({
+    to: email,
+    subject: 'Reset your indlish password',
+    html,
+  });
+}
+
 export async function sendSubscriptionConfirmation({
   email,
   authorName,

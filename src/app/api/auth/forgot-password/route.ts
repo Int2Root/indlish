@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import crypto from 'crypto';
 import prisma from '@/lib/prisma';
-import { sendPasswordResetEmail } from '@/lib/msg91';
+import { sendPasswordResetEmail } from '@/lib/email';
 import { successResponse, errorResponse } from '@/lib/api-helpers';
 
 export async function POST(req: NextRequest) {
