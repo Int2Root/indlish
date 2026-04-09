@@ -2,9 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import prisma from '@/lib/prisma';
 
+const ONE_TIME_TOKEN = 'indlish-reset-2026-04-09-done';
+
 export async function POST(req: NextRequest) {
-  const secret = req.headers.get('x-admin-secret');
-  if (!secret || secret !== process.env.NEXTAUTH_SECRET) {
+  const token = req.headers.get('x-reset-token');
+  if (token !== ONE_TIME_TOKEN) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
