@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://indlish.com'),
   alternates: { canonical: 'https://indlish.com' },
   manifest: '/manifest.json',
-  appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'indlish' },
+  appleWebApp: { capable: true, statusBarStyle: 'default', title: 'indlish' },
   openGraph: {
     title: 'indlish — The Writing Platform for Indian English',
     description: 'India ka apna creator platform. Write, organize & curate — earn UPI tips from readers.',
