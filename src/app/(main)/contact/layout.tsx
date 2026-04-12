@@ -2,10 +2,10 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Contact Us',
-  description: 'Get in touch with the indlish team. Questions, feedback, or partnership inquiries — we'd love to hear from you.',
+  description: "Get in touch with the indlish team. Questions, feedback, or partnership inquiries — we'd love to hear from you.",
   openGraph: {
     title: 'Contact Us — indlish',
-    description: 'Get in touch with the indlish team. Questions, feedback, or partnership inquiries — we'd love to hear from you.',
+    description: "Get in touch with the indlish team. Questions, feedback, or partnership inquiries — we'd love to hear from you.",
   },
 };
 
