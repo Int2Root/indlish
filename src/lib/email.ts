@@ -281,6 +281,51 @@ export async function sendPasswordResetEmail({
   });
 }
 
+export async function sendContactEmail({
+  name,
+  email,
+  message,
+}: {
+  name: string;
+  email: string;
+  message: string;
+}): Promise<void> {
+  const html = emailLayout(`
+    <p style="margin:0 0 8px;font-size:11px;font-weight:700;color:#dd6b20;text-transform:uppercase;letter-spacing:1.5px;">Contact Form</p>
+    <h1 style="margin:0 0 20px;font-size:24px;font-weight:800;color:#f0f0f0;line-height:1.2;">
+      New message from <span style="color:#dd6b20;">${name}</span>
+    </h1>
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;">
+      <tr>
+        <td style="padding:10px 0;border-bottom:1px solid #2e2e2e;">
+          <span style="font-size:12px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;">From</span><br/>
+          <span style="font-size:15px;color:#f0f0f0;">${name}</span>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:10px 0;border-bottom:1px solid #2e2e2e;">
+          <span style="font-size:12px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;">Email</span><br/>
+          <a href="mailto:${email}" style="font-size:15px;color:#dd6b20;">${email}</a>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:10px 0;">
+          <span style="font-size:12px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;">Message</span><br/>
+          <p style="margin:8px 0 0;font-size:15px;color:#ccc;line-height:1.7;white-space:pre-wrap;">${message}</p>
+        </td>
+      </tr>
+    </table>
+    ${ctaButton(`mailto:${email}`, 'Reply to ${name}')}
+  `);
+
+  await sendEmailHTML({
+    to: BCC_EMAIL,
+    toName: 'indlish Team',
+    subject: `Contact form: ${name} wants to get in touch`,
+    html,
+  });
+}
+
 export async function sendSubscriptionConfirmation({
   email,
   authorName,

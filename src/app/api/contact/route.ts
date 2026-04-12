@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { sendContactEmail } from '@/lib/email';
 
 export async function POST(req: Request) {
   try {
@@ -20,14 +21,12 @@ export async function POST(req: Request) {
       );
     }
 
-    // Log to console for now — can integrate with
-    // email service, Notion DB, or Prisma later
-    console.log('[Contact Form]', {
+    // Send notification email to the team (fire and forget)
+    sendContactEmail({
       name: name.trim(),
       email: email.trim(),
       message: message.trim(),
-      timestamp: new Date().toISOString(),
-    });
+    }).catch(console.error);
 
     return NextResponse.json(
       { success: true, message: 'Message received! We will get back to you soon.' },
