@@ -12,10 +12,13 @@ export async function GET(req: NextRequest) {
       return errorResponse('Query must be at least 2 characters', 400);
     }
 
-    const results: any = {};
+    // Run all search queries in parallel instead of sequentially
+    const queries: Promise<any>[] = [];
+    const queryKeys: string[] = [];
 
     if (type === 'all' || type === 'articles') {
-      results.articles = await prisma.article.findMany({
+      queryKeys.push('articles');
+      queries.push(prisma.article.findMany({
         where: {
           status: 'PUBLISHED',
           author: { username: { not: 'test' } },
@@ -31,11 +34,12 @@ export async function GET(req: NextRequest) {
         },
         take: 20,
         orderBy: { views: 'desc' },
-      });
+      }));
     }
 
     if (type === 'all' || type === 'boards') {
-      results.boards = await prisma.board.findMany({
+      queryKeys.push('boards');
+      queries.push(prisma.board.findMany({
         where: {
           visibility: 'PUBLIC',
           OR: [
@@ -48,11 +52,12 @@ export async function GET(req: NextRequest) {
           _count: { select: { pins: true, followers: true } },
         },
         take: 20,
-      });
+      }));
     }
 
     if (type === 'all' || type === 'users') {
-      results.users = await prisma.user.findMany({
+      queryKeys.push('users');
+      queries.push(prisma.user.findMany({
         where: {
           OR: [
             { name: { contains: q, mode: 'insensitive' } },
@@ -64,8 +69,12 @@ export async function GET(req: NextRequest) {
           _count: { select: { articles: true, followers: true } },
         },
         take: 20,
-      });
+      }));
     }
+
+    const queryResults = await Promise.all(queries);
+    const results: any = {};
+    queryKeys.forEach((key, i) => { results[key] = queryResults[i]; });
 
     return successResponse(results);
   } catch {

@@ -12,85 +12,81 @@ export async function GET(req: NextRequest) {
 
     const session = await getAuthSession();
     const skip = (page - 1) * limit;
+    const articleInclude = {
+      author: { select: { id: true, name: true, username: true, image: true } },
+      tags: { include: { tag: true } },
+      _count: { select: { likes: true, tips: true } },
+    };
+    const whereArticle: any = { status: 'PUBLISHED', author: { username: { not: 'test' } } };
 
-    let articles: any[] = [];
-    let boards: any[] = [];
+    // Fetch following IDs once (only if user is logged in)
+    let followingIds: string[] = [];
+    if (session?.user) {
+      const following = await prisma.follow.findMany({
+        where: { followerId: session.user.id },
+        select: { followingId: true },
+      });
+      followingIds = following.map(f => f.followingId);
+    }
 
-    if (type === 'all' || type === 'articles') {
-      const whereArticle: any = { status: 'PUBLISHED', author: { username: { not: 'test' } } };
+    // Build article + board queries in parallel
+    const articlePromise = (async () => {
+      if (type !== 'all' && type !== 'articles') return [];
 
       if (feed === 'following' && session?.user) {
-        // Following feed — only articles from followed creators
-        const following = await prisma.follow.findMany({
-          where: { followerId: session.user.id },
-          select: { followingId: true },
-        });
-        const followingIds = following.map(f => f.followingId);
-        articles = await prisma.article.findMany({
+        return prisma.article.findMany({
           where: { ...whereArticle, authorId: { in: followingIds } },
-          include: {
-            author: { select: { id: true, name: true, username: true, image: true } },
-            tags: { include: { tag: true } },
-            _count: { select: { likes: true, tips: true } },
-          },
+          include: articleInclude,
           orderBy: { publishedAt: 'desc' },
           take: limit,
           skip,
         });
-      } else {
-        // Trending feed
-        if (session?.user) {
-          const following = await prisma.follow.findMany({
-            where: { followerId: session.user.id },
-            select: { followingId: true },
-          });
-          const followingIds = following.map(f => f.followingId);
-          if (followingIds.length > 0) {
-            articles = await prisma.article.findMany({
-              where: { ...whereArticle, authorId: { in: followingIds } },
-              include: {
-                author: { select: { id: true, name: true, username: true, image: true } },
-                tags: { include: { tag: true } },
-                _count: { select: { likes: true, tips: true } },
-              },
-              orderBy: { publishedAt: 'desc' },
-              take: limit,
-              skip,
-            });
-          }
-        }
-
-        // Fill with trending if not enough
-        if (articles.length < limit) {
-          const trending = await prisma.article.findMany({
-            where: { status: 'PUBLISHED', id: { notIn: articles.map(a => a.id) } },
-            include: {
-              author: { select: { id: true, name: true, username: true, image: true } },
-              tags: { include: { tag: true } },
-              _count: { select: { likes: true, tips: true } },
-            },
-            orderBy: [{ views: 'desc' }, { publishedAt: 'desc' }],
-            take: limit - articles.length,
-            skip: articles.length > 0 ? 0 : skip,
-          });
-          articles = [...articles, ...trending];
-        }
       }
-    }
 
-    if (type === 'all' || type === 'boards') {
-      boards = await prisma.board.findMany({
-        where: { visibility: 'PUBLIC' },
-        include: {
-          user: { select: { id: true, name: true, username: true, image: true } },
-          pins: { take: 4, orderBy: { createdAt: 'desc' } },
-          _count: { select: { pins: true, followers: true } },
-        },
-        orderBy: { updatedAt: 'desc' },
-        take: type === 'boards' ? limit : 6,
-        skip: type === 'boards' ? skip : 0,
+      // Trending feed — single query, no waterfall
+      if (followingIds.length > 0) {
+        const fromFollowing = await prisma.article.findMany({
+          where: { ...whereArticle, authorId: { in: followingIds } },
+          include: articleInclude,
+          orderBy: { publishedAt: 'desc' },
+          take: limit,
+          skip,
+        });
+        if (fromFollowing.length >= limit) return fromFollowing;
+
+        const trending = await prisma.article.findMany({
+          where: { status: 'PUBLISHED', id: { notIn: fromFollowing.map(a => a.id) } },
+          include: articleInclude,
+          orderBy: [{ views: 'desc' }, { publishedAt: 'desc' }],
+          take: limit - fromFollowing.length,
+        });
+        return [...fromFollowing, ...trending];
+      }
+
+      return prisma.article.findMany({
+        where: { status: 'PUBLISHED' },
+        include: articleInclude,
+        orderBy: [{ views: 'desc' }, { publishedAt: 'desc' }],
+        take: limit,
+        skip,
       });
-    }
+    })();
+
+    const boardPromise = (type === 'all' || type === 'boards')
+      ? prisma.board.findMany({
+          where: { visibility: 'PUBLIC' },
+          include: {
+            user: { select: { id: true, name: true, username: true, image: true } },
+            pins: { take: 4, orderBy: { createdAt: 'desc' } },
+            _count: { select: { pins: true, followers: true } },
+          },
+          orderBy: { updatedAt: 'desc' },
+          take: type === 'boards' ? limit : 6,
+          skip: type === 'boards' ? skip : 0,
+        })
+      : Promise.resolve([]);
+
+    const [articles, boards] = await Promise.all([articlePromise, boardPromise]);
 
     return successResponse({ articles, boards, page });
   } catch {

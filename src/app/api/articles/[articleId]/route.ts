@@ -25,8 +25,8 @@ export async function GET(req: NextRequest, { params }: { params: { articleId: s
 
     if (!article) return errorResponse('Article not found', 404);
 
-    // Increment views
-    await prisma.article.update({ where: { id: params.articleId }, data: { views: { increment: 1 } } });
+    // Fire-and-forget view increment — don't block API response
+    prisma.article.update({ where: { id: params.articleId }, data: { views: { increment: 1 } } }).catch(() => {});
 
     return successResponse(article);
   } catch {

@@ -7,17 +7,20 @@ interface Props {
   params: { slug: string };
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const article = await prisma.article.findUnique({
-    where: { slug: params.slug, status: 'PUBLISHED' },
-    select: {
-      title: true,
-      excerpt: true,
-      coverImage: true,
-      publishedAt: true,
-      author: { select: { name: true } },
+// Cache the article fetch so generateMetadata and the page share the same query
+const getArticle = async (slug: string) => {
+  return prisma.article.findUnique({
+    where: { slug, status: 'PUBLISHED' },
+    include: {
+      author: { select: { id: true, name: true, username: true, image: true, upiId: true } },
+      tags: { include: { tag: true } },
+      _count: { select: { likes: true } },
     },
   });
+};
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const article = await getArticle(params.slug);
 
   if (!article) return { title: 'Article Not Found' };
 
@@ -54,22 +57,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function ArticlePage({ params }: Props) {
-  const article = await prisma.article.findUnique({
-    where: { slug: params.slug, status: 'PUBLISHED' },
-    include: {
-      author: { select: { id: true, name: true, username: true, image: true, upiId: true } },
-      tags: { include: { tag: true } },
-      _count: { select: { likes: true } },
-    },
-  });
+  const article = await getArticle(params.slug);
 
   if (!article) notFound();
 
-  // Increment views
-  await prisma.article.update({
+  // Fire-and-forget view increment — don't block page render
+  prisma.article.update({
     where: { id: article.id },
     data: { views: { increment: 1 } },
-  });
+  }).catch(() => {});
 
   // Serialize Date objects before passing to client component
   const serialized = {
