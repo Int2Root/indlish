@@ -132,19 +132,20 @@ export default function HomePage() {
       </div>
 
       {/* ── Hero ── */}
-      <section className="relative overflow-hidden">
-        {/* Dot grid */}
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 opacity-[0.025] pointer-events-none"
-          style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, #ed8936 1px, transparent 0)', backgroundSize: '28px 28px' }}
-        />
-        {/* Radial glow */}
-        <div
-          aria-hidden="true"
-          className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] pointer-events-none"
-          style={{ background: 'radial-gradient(ellipse at center top, rgba(221,107,32,0.1) 0%, transparent 65%)' }}
-        />
+      <section className="relative isolate">
+        {/* Decorative clip container – keeps dot grid & glow inside hero without overflow-hidden on the section (which causes a Chrome compositing bug that blocks paint of all subsequent sections) */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
+          {/* Dot grid */}
+          <div
+            className="absolute inset-0 opacity-[0.025]"
+            style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, #ed8936 1px, transparent 0)', backgroundSize: '28px 28px' }}
+          />
+          {/* Radial glow */}
+          <div
+            className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px]"
+            style={{ background: 'radial-gradient(ellipse at center top, rgba(221,107,32,0.1) 0%, transparent 65%)' }}
+          />
+        </div>
 
         <div className="relative max-w-5xl mx-auto px-4 sm:px-6 pt-20 pb-16 text-center">
           <div className="inline-flex items-center gap-2 bg-brand-500/10 border border-brand-500/20 text-brand-400 text-sm px-4 py-1.5 rounded-full mb-8">
