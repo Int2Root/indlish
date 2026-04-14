@@ -122,9 +122,9 @@ export default function HomePage() {
       {/* ── Product Hunt Launch Banner ── */}
       <div className="bg-brand-500/10 border-b border-brand-500/20">
         <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-center gap-x-3 gap-y-1 flex-wrap text-sm">
-          <span className="text-brand-400 font-semibold">🚀 Launching on Product Hunt — April 7, 2026</span>
+          <span className="text-brand-400 font-semibold">🚀 Now Live on Product Hunt!</span>
           <span className="text-text-muted hidden sm:inline">·</span>
-          <span className="text-text-muted hidden sm:inline">Support us on launch day!</span>
+          <span className="text-text-muted hidden sm:inline">Support us with an upvote!</span>
           <Link href="/register" className="text-brand-400 hover:text-brand-300 font-medium underline underline-offset-2 transition-colors">
             Join free now →
           </Link>
@@ -154,7 +154,7 @@ export default function HomePage() {
           </div>
 
           <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold mb-6 leading-[1.1] tracking-tight">
-            Write, Discover &amp;<br />
+            Write, Discover &amp; <br />
             <span className="text-brand-400">Celebrate Indian English</span>
           </h1>
 
