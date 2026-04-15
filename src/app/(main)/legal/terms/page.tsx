@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 export const metadata: Metadata = {
   title: 'Terms of Service',
   description: 'Terms of Service for indlish, the India-native creator platform by Int2Root.',
+  alternates: { canonical: 'https://indlish.com/legal/terms' },
 };
 
 export default function TermsPage() {

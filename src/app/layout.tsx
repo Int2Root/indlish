@@ -18,6 +18,9 @@ export const metadata: Metadata = {
   alternates: { canonical: 'https://indlish.com' },
   manifest: '/manifest.json',
   appleWebApp: { capable: true, statusBarStyle: 'default', title: 'indlish' },
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || undefined,
+  },
   openGraph: {
     title: 'indlish — The Writing Platform for Indian English',
     description: 'India ka apna creator platform. Write, organize & curate — earn UPI tips from readers.',
@@ -36,10 +39,33 @@ export const metadata: Metadata = {
   },
 };
 
+const websiteJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'indlish',
+  url: 'https://indlish.com',
+  description: 'India ka apna creator platform. Write articles, organize notes, curate boards & earn UPI tips.',
+  publisher: {
+    '@type': 'Organization',
+    name: 'Int2Root',
+    url: 'https://int2root.com',
+    logo: { '@type': 'ImageObject', url: 'https://indlish.com/icon-512.png' },
+  },
+  potentialAction: {
+    '@type': 'SearchAction',
+    target: { '@type': 'EntryPoint', urlTemplate: 'https://indlish.com/search?q={search_term_string}' },
+    'query-input': 'required name=search_term_string',
+  },
+};
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="dark">
       <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
+        />
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-DD5FSEKC4W"
           strategy="afterInteractive"

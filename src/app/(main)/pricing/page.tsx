@@ -4,8 +4,16 @@ import { Check } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Pricing',
-  description: 'Simple, honest pricing for Indian creators. Start free, upgrade when you grow.',
+  description: 'Simple, honest pricing for Indian creators. Start free, upgrade when you grow. Pro from ₹99/month.',
+  alternates: { canonical: 'https://indlish.com/pricing' },
   openGraph: {
+    title: 'Pricing — indlish',
+    description: 'Simple, honest pricing for Indian creators. Start free, upgrade when you grow. Pro from ₹99/month.',
+    url: 'https://indlish.com/pricing',
+    siteName: 'indlish',
+  },
+  twitter: {
+    card: 'summary_large_image',
     title: 'Pricing — indlish',
     description: 'Simple, honest pricing for Indian creators. Start free, upgrade when you grow.',
   },
